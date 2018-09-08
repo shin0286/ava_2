@@ -1,8 +1,8 @@
 # Project: Project1
 # Makefile created by Dev-C++ 5.11
 
-CPP      = g++.exe
-CC       = gcc.exe
+CPP="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe"
+CC="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe"
 WINDRES  = windres.exe
 OBJ      = pointerTest.o switchCaseTest.o basicTest.o nsTest2.o nsTest3.o nsTest4.o nsTest0.o nsTest1.o tryCatchTest.o nsTest5.o praticalTest.o nsTest6.o nsTest7.o structTest.o
 LINKOBJ  = pointerTest.o switchCaseTest.o basicTest.o nsTest2.o nsTest3.o nsTest4.o nsTest0.o nsTest1.o tryCatchTest.o nsTest5.o praticalTest.o nsTest6.o nsTest7.o structTest.o
@@ -65,3 +65,6 @@ nsTest7.o: nsTest7.cpp
 
 structTest.o: structTest.cpp
 	$(CPP) -c structTest.cpp -o structTest.o $(CXXFLAGS)
+
+
+
