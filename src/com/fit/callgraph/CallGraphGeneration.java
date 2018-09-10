@@ -5,6 +5,7 @@ import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.config.Paths;
 import com.fit.normalizer.FunctionNormalizer;
 import com.fit.parser.projectparser.ProjectParser;
+import com.fit.tree.object.FunctionNode;
 import com.fit.tree.object.IFunctionNode;
 import com.fit.tree.object.INode;
 import com.fit.utils.Utils;
@@ -18,6 +19,7 @@ import org.eclipse.cdt.internal.core.dom.parser.c.CASTFunctionCallExpression;
 import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTFunctionCallExpression;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author namdv
@@ -30,10 +32,12 @@ public class CallGraphGeneration implements ICallGraphGeneration {
 
 
     public static void main(String[] args) {
-        String path = Paths.TSDV_R1;
+        String path = Paths.COMBINED_STATIC_AND_DYNAMIC_GENERATION;
         CallGraphGeneration graphGeneration = new CallGraphGeneration();
-        graphGeneration.init(path);
-
+        ProjectParser parser = new ProjectParser(new File(path), null);
+        INode projectRoot = parser.getRootTree();
+        INode result = graphGeneration.findMainFunction(projectRoot);
+        System.out.println(result.getName());
     }
 
     public void init(String path){
@@ -75,10 +79,13 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         }
     }
 
-    public String findMainFunction(File projectPath){
-        String result = "";
-        return result;
+
+
+    public INode findMainFunction(INode node){
+
+        return null;
     }
+
     public void visitFunction(IASTStatement statement, ICallGraphNode begin){
 
     }
