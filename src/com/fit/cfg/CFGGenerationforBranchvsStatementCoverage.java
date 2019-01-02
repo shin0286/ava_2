@@ -63,10 +63,10 @@ public class CFGGenerationforBranchvsStatementCoverage implements ICFGGeneration
 	}
 
 	public static void main(String[] args) throws Exception {
-		ProjectParser parser = new ProjectParser(new File(Paths.SYMBOLIC_EXECUTION_TEST));
+		ProjectParser parser = new ProjectParser(new File(Paths.TSDV_R1));
 
 		INode function = Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "Merge2(int[],int[],int[],int,int)")
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "Dim1InputAdvance(int[])")
 				.get(0);
 
 		System.out.println(((IFunctionNode) function).getAST().getRawSignature());

@@ -1,8 +1,8 @@
 # Project: Project1
 # Makefile created by Dev-C++ 5.11
 
-CPP      = g++.exe
-CC       = gcc.exe
+CPP="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe"
+CC="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe"
 WINDRES  = windres.exe
 OBJ      = class_test.o simple_test.o struct_test.o
 LINKOBJ  = class_test.o simple_test.o struct_test.o
@@ -32,3 +32,53 @@ simple_test.o: simple_test.cpp
 
 struct_test.o: struct_test.cpp
 	$(CPP) -c struct_test.cpp -o struct_test.o $(CXXFLAGS)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

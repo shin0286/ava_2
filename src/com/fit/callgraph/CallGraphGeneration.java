@@ -5,20 +5,26 @@ import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.config.Paths;
 import com.fit.normalizer.FunctionNormalizer;
 import com.fit.parser.projectparser.ProjectParser;
-import com.fit.tree.object.FunctionNode;
 import com.fit.tree.object.IFunctionNode;
 import com.fit.tree.object.INode;
+import com.fit.utils.ASTUtils;
 import com.fit.utils.Utils;
+import com.fit.utils.UtilsVu;
 import com.fit.utils.search.FunctionNodeCondition;
 import com.fit.utils.search.Search;
 import org.apache.log4j.Logger;
 import org.eclipse.cdt.core.dom.ast.IASTFunctionDeclarator;
 import org.eclipse.cdt.core.dom.ast.IASTNode;
 import org.eclipse.cdt.core.dom.ast.IASTStatement;
+import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
+import org.eclipse.cdt.core.dom.ast.gnu.c.GCCLanguage;
+import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
+import org.eclipse.cdt.core.model.ILanguage;
 import org.eclipse.cdt.internal.core.dom.parser.c.CASTFunctionCallExpression;
 import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTFunctionCallExpression;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -86,7 +92,26 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         return null;
     }
 
-    public void visitFunction(IASTStatement statement, ICallGraphNode begin){
+    public void visitFunction(IASTStatement statement, ICallGraphNode begin, String path){
+        try {
+            File file = new File(path);
+            String content = null;
+            content = UtilsVu.getContentFile(file);
+            ILanguage lang = file.getName().toLowerCase().endsWith(".c") ? GCCLanguage.getDefault()
+                    : GPPLanguage.getDefault();
+            IASTTranslationUnit u = ASTUtils.getIASTTranslationUnit(content.toCharArray(), path, null, lang);
+            IASTNode[] child = u.getChildren();
+            for(IASTNode n: child){
+                if(isFunctionCallExpression((IASTStatement) n)){
+                    // TODO: do in function contain functionNode n
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void doInFunction(){
 
     }
 

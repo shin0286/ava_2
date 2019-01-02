@@ -32,7 +32,7 @@ public class ProjectParser extends AbstractProjectParser implements
 
 	public static void main(String[] args) throws Exception {
 		ProjectParser projectParser = new ProjectParser(new File(
-				Paths.RETURN_ENUM), null);
+				Paths.COMBINED_STATIC_AND_DYNAMIC_GENERATION), null);
 		IProjectNode projectRoot = projectParser.getRootTree();
 
 		/**

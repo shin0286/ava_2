@@ -1,8 +1,8 @@
 # Project: return_enum_for_demo
 # Makefile created by Dev-C++ 5.11
 
-CPP      = "C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe"
-CC       = C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe
+CPP="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe"
+CC="C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe"
 WINDRES  = windres.exe
 OBJ      = main.o return_enum.o
 LINKOBJ  = main.o return_enum.o
@@ -29,3 +29,5 @@ main.o: main.cpp
 
 return_enum.o: return_enum.cpp
 	$(CPP) -c return_enum.cpp -o return_enum.o $(CXXFLAGS)
+
+

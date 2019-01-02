@@ -46,7 +46,7 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 
 	public static void main(String[] args) throws Exception {
 		Utils.initializeEnvironment();
-		ProjectParser parser = new ProjectParser(new File(Paths.SYMBOLIC_EXECUTION_TEST));
+		ProjectParser parser = new ProjectParser(new File(Paths.TSDV_R1));
 		INode function = Search
 				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "merge(int[],int,int[],int,int[])")
 				.get(0);

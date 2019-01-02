@@ -4,8 +4,12 @@ import com.fit.config.Paths;
 import com.fit.parser.projectparser.ProjectParser;
 import com.fit.utils.search.FunctionNodeCondition;
 import com.fit.utils.search.Search;
+import org.eclipse.cdt.core.dom.ast.IASTParameterDeclaration;
+import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateDeclaration;
+import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateParameter;
 
 import java.io.File;
+import java.util.List;
 
 public class FunctionNode extends AbstractFunctionNode {
 

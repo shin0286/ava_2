@@ -8,3 +8,4 @@ out/
 ava.iml
 nio-data.txt
 local/setting.properties
+src/log4j.properties

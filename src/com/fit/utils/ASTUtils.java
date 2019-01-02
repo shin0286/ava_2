@@ -29,7 +29,9 @@ public class ASTUtils {
     }
 
     public static void main(String[] args) {
-        String path = "data-test/samvu/1_Load_Tree.cpp";
+        //D:\Khoa_Luan\ava\data-test\duongtd\sample2\sophuc.cpp
+        //data-test/ducanh/IncludeHeaderDependencyGeneration/main.cpp
+        String path = "data-test/namdv/QLSV/qlsv.c";
         ASTUtils.printTree(path);
     }
 

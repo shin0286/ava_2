@@ -29,7 +29,7 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setName(String name) {
-        name = name;
+        this.name = name;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setId(int id) {
-        id = id;
+        this.id = id;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setASTFileLocation(String astLoc) {
-        astLoc = astLoc;
+        this.astLoc = astLoc;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setListTarget(List<ICallGraphNode> listTarget) {
-        targetNodeList = listTarget;
+        this.targetNodeList = listTarget;
     }
 
     @Override
@@ -69,6 +69,6 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setVisited(boolean isVisited) {
-        isVisited = isVisited;
+        this.isVisited = isVisited;
     }
 }

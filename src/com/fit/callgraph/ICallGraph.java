@@ -9,7 +9,7 @@ import java.util.List;
 public interface ICallGraph {
     ICallGraphNode findFirstCallGraphNodeByName(String name);
     ICallGraphNode findById(int id);
-    ICallGraphNode getMainNode();
+    ICallGraphNode getMainNode(INode node);
     List<ICallGraphNode> getAllNodes();
     void setIdforAllNodes();
     @Deprecated
