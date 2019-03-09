@@ -1,12 +1,10 @@
 package com.fit.testdatagen.se;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.fit.cfg.object.*;
+import com.fit.cfg.testpath.*;
 import org.apache.log4j.Logger;
 import org.eclipse.cdt.core.dom.ast.IASTBinaryExpression;
 import org.eclipse.cdt.core.dom.ast.IASTDeclaration;
@@ -25,20 +23,11 @@ import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTFunctionDefinition;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTLiteralExpression;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTUnaryExpression;
 import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTBinaryExpression;
+import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTParameterDeclaration;
 import org.eclipse.cdt.internal.core.dom.rewrite.astwriter.ASTWriter;
 
 import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.cfg.ICFGGeneration;
-import com.fit.cfg.object.BeginFlagCfgNode;
-import com.fit.cfg.object.EndFlagCfgNode;
-import com.fit.cfg.object.FlagCfgNode;
-import com.fit.cfg.object.ICfgNode;
-import com.fit.cfg.object.NormalCfgNode;
-import com.fit.cfg.object.ScopeCfgNode;
-import com.fit.cfg.testpath.IFullTestpath;
-import com.fit.cfg.testpath.INormalizedTestpath;
-import com.fit.cfg.testpath.ITestpath;
-import com.fit.cfg.testpath.PossibleTestpathGeneration;
 import com.fit.config.Bound;
 import com.fit.config.FunctionConfig;
 import com.fit.config.IFunctionConfig;
@@ -150,6 +139,16 @@ public class SymbolicExecution implements ISymbolicExecution {
 	 */
 	private Set<String> usedVariables = new HashSet<>();
 
+	public List<ICfgNode> listCfgNode;
+
+	public ArrayList<String> preCond = new ArrayList<>();
+
+	public ArrayList<String> postCond = new ArrayList<>();
+
+	public ArrayList<String> localParam = new ArrayList<>();
+
+	public HashMap<String,Integer> cfgMap = new HashMap<>();
+
 	public SymbolicExecution(ITestpath testpath, Parameter paramaters, IFunctionNode functionNode) throws Exception {
 		if (functionNode != null && paramaters != null && paramaters.size() > 0 && testpath != null) {
 			Date startTime = Calendar.getInstance().getTime();
@@ -168,10 +167,41 @@ public class SymbolicExecution implements ISymbolicExecution {
 		}
 	}
 
+	public void replaceLocalParameter(){
+		String localValue = "";
+	    for (int i=0; i<localParam.size(); i++){
+	        for (int j=0; j<listCfgNode.size(); j++){
+				ICfgNode cfgNode = listCfgNode.get(j);
+	            String node = cfgNode.getContent();
+	            if (node.contains(localParam.get(i))){
+	                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(localParam.get(i)) < node.indexOf('=')){
+	                    localValue = (node.split("="))[1];
+	                    localValue = localValue.replace(" ", "");
+                    } else if (cfgMap.get(node) == CONDITION){
+	                	node = node.replace(localParam.get(i), localValue);
+	                	ICfgNode newNode = new CfgNode(node);
+	                	listCfgNode.set(j,newNode);
+					} else if (cfgMap.get(node) == RETURN){
+	                	String returnValue = node.split(" ")[1];
+	                	node = node.replace(returnValue,localValue);
+						ICfgNode newNode = new CfgNode(node);
+						listCfgNode.set(j,newNode);
+					}
+                }
+            }
+        }
+    }
+
+	public SymbolicExecution(ITestpath testpath) throws Exception {
+		if (testpath != null) {
+			this.testpath = testpath;
+		}
+	}
 	public static void main(String[] args) throws Exception {
-		ProjectParser parser = new ProjectParser(new File(Paths.COMBINED_STATIC_AND_DYNAMIC_GENERATION));
+		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\"));
 		IFunctionNode function = (IFunctionNode) Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "class_test1(SinhVien)").get(0);
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "mmin3(int,int,int)").get(0);
+//		System.out.println(function.getAST().getDeclarator().getChildren()[1].getChildren()[1].getRawSignature());
 		logger.debug(function.getAST().getRawSignature());
 
 		FunctionConfig functionConfig = new FunctionConfig();
@@ -196,8 +226,10 @@ public class SymbolicExecution implements ISymbolicExecution {
 				function.getFunctionConfig().getMaximumInterationsForEachLoop());
 		tpGen.generateTestpaths();
 		logger.debug("num tp = " + tpGen.getPossibleTestpaths().size());
-		IFullTestpath randomTestpath = tpGen.getPossibleTestpaths().get(2);
-		logger.debug(randomTestpath);
+		FullTestpaths testpath = tpGen.getPossibleTestpaths();
+//        IFullTestpath randomTestpath = tpGen.getPossibleTestpaths().get(0);
+
+//		logger.debug(randomTestpath);
 
 		// Get the passing variables of the given function
 		Parameter paramaters = new Parameter();
@@ -205,11 +237,44 @@ public class SymbolicExecution implements ISymbolicExecution {
 			paramaters.add(n);
 		for (INode n : ((FunctionNode) function).getReducedExternalVariables())
 			paramaters.add(n);
+		String summary = "";
+        for (int i=0; i<testpath.size(); i++){
+            IFullTestpath randomTestpath = testpath.get(i);
+            ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
+			((SymbolicExecution) se).replaceLocalParameter();
+//            System.out.println("constraints=\n" + se.getConstraints());
+            System.out.println(((SymbolicExecution) se).listCfgNode);
+            if (i<testpath.size()-1) {
+				String pathSum = ((SymbolicExecution) se).preCond.get(((SymbolicExecution) se).preCond.size()-1) + "?" + ((SymbolicExecution) se).postCond.get(0) + ":";
+				summary += pathSum;
+			}
+//			System.out.println(se.getTableMapping().getVariables().get(0).getName());
+        }
+		int numOfPath = testpath.size();
+		ISymbolicExecution se = new SymbolicExecution(testpath.get(numOfPath-1), paramaters, function);
+		summary = summary + ((SymbolicExecution) se).postCond.get(0);
+		summary = summary.replace("[", "");
+		summary = summary.replace("]", "");
+//		((SymbolicExecution) se).replaceLocalParameter();
+//		System.out.println(se.getTableMapping().getVariables().get(0).getName());
+//		System.out.println(((SymbolicExecution) se).preCond);
+//        System.out.println(((SymbolicExecution) se).listCfgNode);
+//		for (int i=0; i<((SymbolicExecution) se).preCond.size(); i++){
+//			if (((SymbolicExecution) se).preCond.get(i).contains("r") == true) {
+//				System.out.println(((SymbolicExecution) se).preCond.get(i));
+//			}
+//		}
 
+		System.out.println(summary);
 		// Get the corresponding path constraints of the test path
-		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
-		System.out.println("constraints=\n" + se.getConstraints());
-		// System.out.println("table var=\n" + se.getTableMapping());
+//		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
+//		System.out.println("constraints=\n" + se.getConstraints());
+//		System.out.println(se.getTableMapping().getVariables().get(1).getAllPhysicalCells());
+//		 System.out.println("table var=\n" + se.getTableMapping());
+	}
+
+	public int getStatementType(IASTNode astNode){
+		return getTypeOfStatement(astNode);
 	}
 
 	private void symbolicTestpath(ITestpath testpath, VariableNodeTable table, IFunctionNode function)
@@ -237,10 +302,26 @@ public class SymbolicExecution implements ISymbolicExecution {
 
 		this.addCharacterBasicConstraints(constraints, table);
 
+		listCfgNode = normalizedTestpath.getAllCfgNodes();
+
+        String instanceParam = "";
+
+		IASTNode [] functionNode = function.getAST().getChildren()[1].getChildren();
+//        System.out.println(functionNode[1].getRawSignature());
+		for (int i=1; i<functionNode.length; i++){
+            if (functionNode[i] instanceof CPPASTParameterDeclaration){
+                instanceParam += functionNode[i].getChildren()[1].getRawSignature() + " ";
+            }
+        }
+
+
+
 		// STEP 2.
 		// We perform the symbolic execution on all of the statements in the normalized
 		// test path until catch an supported statement.
-		for (ICfgNode cfgNode : normalizedTestpath.getAllCfgNodes())
+		for (int i=0; i<listCfgNode.size(); i++) {
+			ICfgNode cfgNode = listCfgNode.get(i);
+//			System.out.println(cfgNode);
 			// If the test path is always false, we stop the symbolic execution.
 			if (!this.constraints.isAlwaysFalse())
 				if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
@@ -249,79 +330,91 @@ public class SymbolicExecution implements ISymbolicExecution {
 					try {
 						AbstractTestdataGeneration.numOfSymbolicStatements++;
 						boolean isContinue = true;
-
 						if (cfgNode instanceof NormalCfgNode) {
 							IASTNode ast = ((NormalCfgNode) cfgNode).getAst();
+//							System.out.println(ast.getRawSignature());
+							int statementType = this.getTypeOfStatement(ast);
+							cfgMap.put(ast.getRawSignature(), statementType);
+							if (statementType != CONDITION){
+								if (statementType == RETURN ){
+									String _postCond = ast.getRawSignature();
+									_postCond = _postCond.replace("return ", "");
+									_postCond = _postCond.replace(";", "");
+									postCond.add(_postCond);
+								}
+							} else {
+								if (statementType == CONDITION)
+									preCond.add(ast.getRawSignature());
+							}
 
 							switch (this.getTypeOfStatement(ast)) {
-							case NAMESPACE:
-								new UsingNamespaceParser().parse(ast, table);
-								break;
+								case NAMESPACE:
+									new UsingNamespaceParser().parse(ast, table);
+									break;
 
-							case UNARY_ASSIGNMENT: {
-								List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
-								constraints.createNewConstraint(newUsedVariable);
+								case UNARY_ASSIGNMENT: {
+									List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
+									constraints.createNewConstraint(newUsedVariable);
 
-								new UnaryBinaryParser().parse(ast, table);
+									new UnaryBinaryParser().parse(ast, table);
 
-								this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
-								break;
-							}
-							case BINARY_ASSIGNMENT: {
-								List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
-								constraints.createNewConstraint(newUsedVariable);
-
-								new BinaryAssignmentParser().parse(ast, table);
-
-								this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
-								break;
-							}
-
-							case DECLARATION: {
-								List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
-								constraints.createNewConstraint(newUsedVariable);
-
-								isContinue = this.parseDeclaration(cfgNode, ast, scopeLevel, table, function);
-
-								this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
-								break;
-							}
-
-							case CONDITION: {
-								List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
-								constraints.createNewConstraint(newUsedVariable);
-
-								isContinue = this.parseCondition(cfgNode, ast, count, table);
-
-								for (PathConstraint constraint : (PathConstraints) this.constraints)
-									this.usedVariables
-											.addAll(this.getUsedArrayvsPointerItem(constraint.getConstraint()));
-								break;
-							}
-
-							case RETURN: {
-								IASTReturnStatement returnAst = (IASTReturnStatement) ast;
-								IASTExpression returnValue = returnAst.getReturnValue();
-								if (returnValue != null) {
-									String value = ExpressionRewriterUtils.rewrite(table,
-											returnValue.getRawSignature());
-									this.usedVariables.addAll(this.getUsedArrayvsPointerItem(value));
+									this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
+									break;
 								}
-								break;
-							}
+								case BINARY_ASSIGNMENT: {
+									List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
+									constraints.createNewConstraint(newUsedVariable);
+									new BinaryAssignmentParser().parse(ast, table);
 
-							case THROW: {
-								ThrowParser throwParser = new ThrowParser();
-								throwParser.parse(ast, table);
-								this.returnValue = throwParser.getExceptionName();
-								break;
-							}
+									this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
+									break;
+								}
 
-							case IGNORE:
-								break;
+								case DECLARATION: {
+									List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
+									constraints.createNewConstraint(newUsedVariable);
 
-							case UNSPECIFIED_STATEMENT:
-								break;
+									isContinue = this.parseDeclaration(cfgNode, ast, scopeLevel, table, function);
+
+									this.usedVariables.addAll(this.getUsedVariable(this.tableMapping));
+									break;
+								}
+
+								case CONDITION: {
+									List<ISymbolicVariable> newUsedVariable = tableMapping.findUsedVariablesAndCreate(ast);
+									constraints.createNewConstraint(newUsedVariable);
+
+									isContinue = this.parseCondition(cfgNode, ast, count, table);
+
+									for (PathConstraint constraint : (PathConstraints) this.constraints)
+										this.usedVariables
+												.addAll(this.getUsedArrayvsPointerItem(constraint.getConstraint()));
+									break;
+								}
+
+								case RETURN: {
+									IASTReturnStatement returnAst = (IASTReturnStatement) ast;
+									IASTExpression returnValue = returnAst.getReturnValue();
+									if (returnValue != null) {
+										String value = ExpressionRewriterUtils.rewrite(table,
+												returnValue.getRawSignature());
+										this.usedVariables.addAll(this.getUsedArrayvsPointerItem(value));
+									}
+									break;
+								}
+
+								case THROW: {
+									ThrowParser throwParser = new ThrowParser();
+									throwParser.parse(ast, table);
+									this.returnValue = throwParser.getExceptionName();
+									break;
+								}
+
+								case IGNORE:
+									break;
+
+								case UNSPECIFIED_STATEMENT:
+									break;
 							}
 						} else if (cfgNode instanceof ScopeCfgNode)
 							scopeLevel = this.parseScope(cfgNode, scopeLevel, table);
@@ -340,8 +433,20 @@ public class SymbolicExecution implements ISymbolicExecution {
 						e.printStackTrace();
 						break;
 					}
-
+		}
+		String _preCond = "(" + preCond.get(0);
+		for (int i=1; i<preCond.size(); i++){
+			_preCond = _preCond + " && " + preCond.get(i);
+		}
+		_preCond = _preCond + ")";
+		preCond.add(_preCond);
 		this.constraints.setVariablesTableNode(this.tableMapping);
+		for (int i=0; i<tableMapping.size(); i++){
+		    String _localParam = tableMapping.getVariables().get(i).getName() + " ";
+		    if (instanceParam.contains(_localParam) == false) {
+                localParam.add(tableMapping.getVariables().get(i).getName());
+            }
+        }
 	}
 
 	private Set<String> getUsedArrayvsPointerItem(String normalizedExpression) {

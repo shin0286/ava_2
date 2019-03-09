@@ -82,10 +82,10 @@ public class PossibleTestpathGeneration implements ITestpathGeneration {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ProjectParser parser = new ProjectParser(new File(Paths.TSDV_R1_4));
+		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\"));
 
 		IFunctionNode function = (IFunctionNode) Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "calculateAge(Date,Date)").get(0);
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "mmin3(int,int,int)").get(0);
 
 		FunctionNormalizer fnNormalizer = function.normalizeFunctionToFindStaticTestcase();
 		function.setAST(fnNormalizer.getNormalizedAST());
@@ -100,7 +100,9 @@ public class PossibleTestpathGeneration implements ITestpathGeneration {
 		PossibleTestpathGeneration tpGen = new PossibleTestpathGeneration(cfg, maxIterations);
 		tpGen.generateTestpaths();
 
-		System.out.println("Num of test paths: " + tpGen.getPossibleTestpaths().size());
+//		System.out.println("Num of test paths: " + tpGen.getPossibleTestpaths().size());
+		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(0));
+		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(2));
 	}
 
 	@Override

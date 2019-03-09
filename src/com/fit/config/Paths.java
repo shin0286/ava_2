@@ -18,7 +18,7 @@ public class Paths {
 	public static String TYPE_DEPENDENCY_GENERATION_TEST = "..\\ava\\data-test\\ducanh\\TypeDependencyGenerationTest\\";
 	public static String TEST_PATH_GENERATION_TEST = "..\\ava\\data-test\\ducanh\\TestpathGenerationTest\\";
 	public static String SYMBOLIC_EXECUTION_TEST = "..\\ava\\data-test\\ducanh\\SymbolicExecutionTest\\";
-	public static String COMBINED_STATIC_AND_DYNAMIC_GENERATION = "..\\ava\\data-test\\ducanh\\CombinedStaticAndDynamicGen\\";
+	public static String COMBINED_STATIC_AND_DYNAMIC_GENERATION = "..\\ava_ver2\\data-test\\ducanh\\CombinedStaticAndDynamicGen\\";
 	public static String STATEMENT_COVERAGE_COMPUTATION_TEST = "..\\ava\\data-test\\ducanh\\StatementCoverageComputationTest\\";
 	public static String FUNCTION_TRANSFORMER_TEST = "..\\ava\\data-test\\ducanh\\FunctionTransformerTest\\";
 	public static String SEPARATE_FUNCTION_TEST = "..\\ava\\data-test\\ducanh\\SeparateFunctionTest";
