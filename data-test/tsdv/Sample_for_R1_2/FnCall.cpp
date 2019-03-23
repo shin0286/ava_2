@@ -23,8 +23,11 @@ int mmin3(int x, int y, int z){
 		return z;
 }
 
+int test0(int x, int y){
+    return (x+y > 0)?(x+y):(x+y < 0)?(x-y):1;
+}
 int test1(int x, int y){
-    int r = (x+y > 0)?(x+y):(x+y < 0)?(x-y):x;
+    int r = test0(x,y);
     if (r-2 > 0)
         return r;
     else
