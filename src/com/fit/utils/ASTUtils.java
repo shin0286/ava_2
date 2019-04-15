@@ -29,7 +29,7 @@ public class ASTUtils {
     }
 
     public static void main(String[] args) {
-        String path = "data-test/samvu/1_Load_Tree.cpp";
+        String path = "data-test\\ducanh\\SymbolicExecutionTest\\loop.cpp";
         ASTUtils.printTree(path);
     }
 

@@ -9,6 +9,7 @@ int Dim1InputSimple(int p[]){
 
 
 int Dim1InputAdvance(int p[]){
+	(p[0]>0)?p[1]:p[2];
 	if (p[0] > 0)
 		return p[1];
 	else

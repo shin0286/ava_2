@@ -143,13 +143,16 @@ public class SymbolicExecution implements ISymbolicExecution {
 
 	public List<ICfgNode> listCfgNode;
 
-	public ArrayList<String> preCond = new ArrayList<>();
-
-	public ArrayList<String> postCond = new ArrayList<>();
-
-	public ArrayList<String> localParam = new ArrayList<>();
-
-	public HashMap<String,Integer> cfgMap = new HashMap<>();
+	public List<ICfgNode> getListCfgNode() {
+		return listCfgNode;
+	}
+	//	public ArrayList<String> preCond = new ArrayList<>();
+//
+//	public ArrayList<String> postCond = new ArrayList<>();
+//
+//	public ArrayList<String> localParam = new ArrayList<>();
+//
+//	public HashMap<String,Integer> cfgMap = new HashMap<>();
 
 	public SymbolicExecution(ITestpath testpath, Parameter paramaters, IFunctionNode functionNode) throws Exception {
 		if (functionNode != null && paramaters != null && paramaters.size() > 0 && testpath != null) {
@@ -169,34 +172,34 @@ public class SymbolicExecution implements ISymbolicExecution {
 		}
 	}
 
-	public void replaceLocalParameter(){
-		String localValue = "";
-	    for (int i=0; i<localParam.size(); i++){
-	        for (int j=0; j<listCfgNode.size(); j++){
-				ICfgNode cfgNode = listCfgNode.get(j);
-	            String node = cfgNode.getContent();
-	            if (node.contains(localParam.get(i))){
-	                int statementType = cfgMap.get(node);
-	                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(localParam.get(i)) < node.indexOf('=')){
-	                    localValue = (node.split("="))[1];
-	                    localValue = localValue.replace(" ", "");
-                    } else if (cfgMap.get(node) == CONDITION){
-	                	node = node.replace(localParam.get(i), localValue);
-//	                	ICfgNode newNode = new CfgNode(node);
-                        cfgMap.put(node,statementType);
-	                	listCfgNode.get(j).setContent(node);
-					} else if (cfgMap.get(node) == RETURN){
-	                	String returnValue = node.split(" ")[1];
-//	                	if (localParam.contains(returnValue) == true) {
-							node = node.replace(returnValue, localValue);
-//						}
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-					}
-                }
-            }
-        }
-    }
+//	public void replaceUsedParameter(){
+//		String localValue = "";
+//	    for (int i=0; i<localParam.size(); i++){
+//	        for (int j=0; j<listCfgNode.size(); j++){
+//				ICfgNode cfgNode = listCfgNode.get(j);
+//	            String node = cfgNode.getContent();
+//	            if (node.contains(localParam.get(i))){
+//	                int statementType = cfgMap.get(node);
+//	                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(localParam.get(i)) < node.indexOf('=')){
+//	                    localValue = (node.split("="))[1];
+//	                    localValue = localValue.replace(" ", "");
+//                    } else if (cfgMap.get(node) == CONDITION){
+//	                	node = node.replace(localParam.get(i), localValue);
+////	                	ICfgNode newNode = new CfgNode(node);
+//                        cfgMap.put(node,statementType);
+//	                	listCfgNode.get(j).setContent(node);
+//					} else if (cfgMap.get(node) == RETURN){
+//	                	String returnValue = node.split(" ")[1];
+////	                	if (localParam.contains(returnValue) == true) {
+//							node = node.replace(returnValue, localValue);
+////						}
+//                        cfgMap.put(node,statementType);
+//                        listCfgNode.get(j).setContent(node);
+//					}
+//                }
+//            }
+//        }
+//    }
 
 	public SymbolicExecution(ITestpath testpath) throws Exception {
 		if (testpath != null) {
@@ -206,7 +209,7 @@ public class SymbolicExecution implements ISymbolicExecution {
 	public static void main(String[] args) throws Exception {
 		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2"));
 		IFunctionNode function = (IFunctionNode) Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "test1(int,int)").get(0);
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "mmin3(int,int,int)").get(0);
 //		System.out.println(function.getAST().getDeclarator().getChildren()[1].getChildren()[1].getRawSignature());
 		logger.debug(function.getAST().getRawSignature());
 
@@ -244,23 +247,23 @@ public class SymbolicExecution implements ISymbolicExecution {
 		for (INode n : ((FunctionNode) function).getReducedExternalVariables())
 			paramaters.add(n);
 		String summary = "";
-        for (int i=0; i<testpath.size(); i++){
-            IFullTestpath randomTestpath = testpath.get(i);
-            ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
-//            System.out.println("constraints=\n" + se.getConstraints());
-            System.out.println(((SymbolicExecution) se).listCfgNode);
-            if (i<testpath.size()-1 && ((SymbolicExecution) se).postCond.size() != 0) {
-				String pathSum = ((SymbolicExecution) se).preCond.get(((SymbolicExecution) se).preCond.size()-1) + "?" + ((SymbolicExecution) se).postCond.get(0) + ":";
-				summary += pathSum;
-			}
+//        for (int i=0; i<testpath.size(); i++){
+//            IFullTestpath randomTestpath = testpath.get(i);
+//            ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
+////            System.out.println("constraints=\n" + se.getConstraints());
+//            System.out.println(((SymbolicExecution) se).listCfgNode);
+//            if (i<testpath.size()-1 && ((SymbolicExecution) se).postCond.size() != 0) {
+//				String pathSum = ((SymbolicExecution) se).preCond.get(((SymbolicExecution) se).preCond.size()-1) + "?" + ((SymbolicExecution) se).postCond.get(0) + ":";
+//				summary += pathSum;
+//			}
 //			System.out.println(se.getTableMapping().getVariables().get(0).getName());
-        }
-		int numOfPath = testpath.size();
-        System.out.println(testpath.get(numOfPath-1));
-		ISymbolicExecution se = new SymbolicExecution(testpath.get(numOfPath-1), paramaters, function);
-		summary = summary + ((SymbolicExecution) se).postCond.get(0);
-
-		System.out.println(summary);
+//        }
+//		int numOfPath = testpath.size();
+//        System.out.println(testpath.get(numOfPath-1));
+//		ISymbolicExecution se = new SymbolicExecution(testpath.get(numOfPath-1), paramaters, function);
+////		summary = summary + ((SymbolicExecution) se).postCond.get(0);
+//
+//		System.out.println(summary);
 		// Get the corresponding path constraints of the test path
 //		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
 //		System.out.println("constraints=\n" + se.getConstraints());
@@ -298,19 +301,18 @@ public class SymbolicExecution implements ISymbolicExecution {
 		this.addCharacterBasicConstraints(constraints, table);
 
 		listCfgNode = normalizedTestpath.getAllCfgNodes();
+//        String instanceParam = "";
+//
+//		System.out.println(function.getAST().getChildren()[0].getRawSignature());
+//		IASTNode [] functionNode = function.getAST().getChildren()[1].getChildren();
+////        System.out.println(functionNode[1].getRawSignature());
+//		for (int i=1; i<functionNode.length; i++){
+//            if (functionNode[i] instanceof CPPASTParameterDeclaration){
+//            	instanceParam += functionNode[i].getChildren()[1].getRawSignature() + " ";
+//            }
+//        }
 
-        String instanceParam = "";
-
-		IASTNode [] functionNode = function.getAST().getChildren()[1].getChildren();
-//        System.out.println(functionNode[1].getRawSignature());
-		for (int i=1; i<functionNode.length; i++){
-            if (functionNode[i] instanceof CPPASTParameterDeclaration){
-            	instanceParam += functionNode[i].getChildren()[1].getRawSignature() + " ";
-            }
-        }
-
-		System.out.println(instanceParam);
-
+//		System.out.println(instanceParam);
 
 		// STEP 2.
 		// We perform the symbolic execution on all of the statements in the normalized
@@ -327,8 +329,8 @@ public class SymbolicExecution implements ISymbolicExecution {
 //                        System.out.println(cfgNode.getContent() + "\t" + (cfgNode instanceof NormalCfgNode));
 						if (cfgNode instanceof NormalCfgNode) {
 							IASTNode ast = ((NormalCfgNode) cfgNode).getAst();
-							int statementType = this.getTypeOfStatement(ast);
-							cfgMap.put(ast.getRawSignature(), statementType);
+//							int statementType = this.getTypeOfStatement(ast);
+//							cfgMap.put(ast.getRawSignature(), statementType);
 //							if (statementType != CONDITION){
 //								if (statementType == RETURN ){
 //									String _postCond = ast.getRawSignature();
@@ -427,50 +429,53 @@ public class SymbolicExecution implements ISymbolicExecution {
 						break;
 					}
 		}
-
-        System.out.println("Map " +cfgMap);
+//        System.out.println("Map " +cfgMap);
 		this.constraints.setVariablesTableNode(this.tableMapping);
-		for (int i=0; i<tableMapping.size(); i++){
-		    String _localParam = tableMapping.getVariables().get(i).getName();
-		    if (instanceParam.contains(_localParam + " ") == false && instanceParam.contains(_localParam + "[") == false) {
-                localParam.add(tableMapping.getVariables().get(i).getName());
-            }
-        }
+//		for (int i=0; i<tableMapping.size(); i++){
+//		    String _localParam = tableMapping.getVariables().get(i).getName();
+//		    if (instanceParam.contains(_localParam + " ") == false && instanceParam.contains(_localParam + "[") == false) {
+//                localParam.add(tableMapping.getVariables().get(i).getName());
+//            }
+//        }
+//
+//        if (!this.constraints.isAlwaysFalse()) {
+//            replaceUsedParameter();
+//            for (ICfgNode cfgNode : listCfgNode) {
+//                if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
+//                    // nothing to do
+//                } else
+//                    try {
+//                        if (cfgNode instanceof NormalCfgNode){
+//                            String node = cfgNode.getContent();
+//                            if (cfgMap.get(node) != CONDITION) {
+//                                if (cfgMap.get(node) == RETURN){
+//                                    node = node.replace("return ", "");
+//                                    node = node.replace(";", "");
+//                                    postCond.add(node);
+//                                }
+//                            } else {
+//                                if (cfgMap.get(node) == CONDITION)
+//                                    preCond.add(node);
+//                            }
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        break;
+//                    }
+//            }
+//
+//            String _preCond = "(" + preCond.get(0);
+//            for (int i=1; i<preCond.size(); i++){
+//                _preCond = _preCond + " && " + preCond.get(i);
+//            }
+//            _preCond = _preCond + ")";
+//            preCond.add(_preCond);
+//            System.out.println("PostCond " + postCond);
+//        }
+	}
 
-        if (!this.constraints.isAlwaysFalse()) {
-            replaceLocalParameter();
-            for (ICfgNode cfgNode : listCfgNode) {
-                if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
-                    // nothing to do
-                } else
-                    try {
-                        if (cfgNode instanceof NormalCfgNode){
-                            String node = cfgNode.getContent();
-                            if (cfgMap.get(node) != CONDITION) {
-                                if (cfgMap.get(node) == RETURN){
-                                    node = node.replace("return ", "");
-                                    node = node.replace(";", "");
-                                    postCond.add(node);
-                                }
-                            } else {
-                                if (cfgMap.get(node) == CONDITION)
-                                    preCond.add(node);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        break;
-                    }
-            }
-
-            String _preCond = "(" + preCond.get(0);
-            for (int i=1; i<preCond.size(); i++){
-                _preCond = _preCond + " && " + preCond.get(i);
-            }
-            _preCond = _preCond + ")";
-            preCond.add(_preCond);
-            System.out.println("PostCond " + postCond);
-        }
+	public boolean isAlwaysFalse(){
+		return this.constraints.isAlwaysFalse();
 	}
 
 	private Set<String> getUsedArrayvsPointerItem(String normalizedExpression) {

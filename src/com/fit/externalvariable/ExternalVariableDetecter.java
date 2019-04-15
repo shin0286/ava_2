@@ -45,7 +45,7 @@ public class ExternalVariableDetecter implements IExternalVariableDetecter {
     }
 
     public static void main(String[] args) {
-        ProjectParser parser = new ProjectParser(new File(Paths.TSDV_R1));
+        ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1\\"));
 
         IFunctionNode function = (IFunctionNode) Search
                 .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "SimpleMethodTest()").get(0);

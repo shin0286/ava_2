@@ -1,4 +1,6 @@
 
+int s;
+
 int mmin(int x, int y){
 	if  (x < y)
 		return x;
@@ -9,11 +11,13 @@ int mmin(int x, int y){
 }
 
 int mmin3(int x, int y, int z){
-    int r = mmin(x,y);
-//    int r = (x<y)?x:y;
-//    int i;
-//    for (i=0; i<10; i++){
-//        cout<<i;
+//    int p;
+//    int q;
+//    q = x;
+//    x = q + y;
+    int r = (x<y)?x:y;
+//    if (x < r) {
+//        return 0;
 //    }
 	if (r < z)
 		return r;
@@ -24,7 +28,8 @@ int mmin3(int x, int y, int z){
 }
 
 int test0(int x, int y){
-    return (x+y > 0)?(x+y):(x+y < 0)?(x-y):1;
+    int r = (x+y > 0)?(x+y):(x+y < 0)?(x-y):1;
+    return r;
 }
 int test1(int x, int y){
     int r = test0(x,y);
@@ -32,6 +37,13 @@ int test1(int x, int y){
         return r;
     else
         return r+2;
+}
+void sum (int a, int b){
+    Sum _sum;
+    _sum.sum = a + b;
+    _sum.num = 2;
+    s = a + b;
+    cout<<s;
 }
 // Calculate 1 + 2 + ... + m
 int SumRecursive(int m){

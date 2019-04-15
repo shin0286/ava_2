@@ -6,9 +6,10 @@ int loop1(int a) {
 }
 
 int loop2(int a) {
-	while (a<100) {
+	while (a<5) {
 		a++;
 	}
+	a = a + 2;
 	return a;
 }
 

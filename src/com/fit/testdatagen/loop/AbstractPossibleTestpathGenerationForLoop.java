@@ -57,6 +57,7 @@ public abstract class AbstractPossibleTestpathGenerationForLoop {
     protected int delta_ = 0;
     protected int realMaximumIterationForTestingLoop;
     AbstractConditionLoopCfgNode loopCondition = null;
+    public List<ICfgNode> listCfgNode;
 
     protected abstract void traverseCFG(ICfgNode stm, PartialTestpath tp, PartialTestpaths testpaths,
                                         boolean isJustOverTheTestingLoop) throws Exception;
@@ -69,7 +70,6 @@ public abstract class AbstractPossibleTestpathGenerationForLoop {
             try {
                 traverseCFG(beginNode, initialTestpath, possibleTestpaths, false);
                 realMaximumIterationForTestingLoop = maximumIterationForTestingLoop;
-
                 if (!isUnboundedTestingLoop) {
                     // maxLoop-1
                     logger.debug("test (maxLoop-1) = " + (realMaximumIterationForTestingLoop - 1) + " times");
@@ -93,11 +93,9 @@ public abstract class AbstractPossibleTestpathGenerationForLoop {
     public int getMaximumIterationsInTargetCondition(ICfgNode stm, PartialTestpath tp) throws Exception {
         int iteration = iterationForUnboundedTestingLoop;
         isUnboundedTestingLoop = true;
-
         if (stm instanceof AbstractConditionLoopCfgNode) {
             if (stm.equals(loopCondition)) {
                 AbstractConditionLoopCfgNode stmCast = (AbstractConditionLoopCfgNode) stm;
-
                 String iterationVariable = stmCast.getIterationVariable();
                 if (iterationVariable != null) {
                     // Create table of variables to the current condition
@@ -109,7 +107,6 @@ public abstract class AbstractPossibleTestpathGenerationForLoop {
 
                     ISymbolicExecution se = new SymbolicExecution(tp, paramaters, cfg.getFunctionNode());
                     List<ISymbolicVariable> vars = se.getTableMapping().getVariables();
-
                     for (ISymbolicVariable var : vars)
                         if (var.getName().equals(iterationVariable) && var instanceof BasicSymbolicVariable) {
 
@@ -161,6 +158,9 @@ public abstract class AbstractPossibleTestpathGenerationForLoop {
 		 * Get the corresponding path constraints of the test path
 		 */
         ISymbolicExecution se = new SymbolicExecution(testpath, paramaters, function);
+        System.out.println("List cfg node " + ((SymbolicExecution) se).listCfgNode);
+        listCfgNode = ((SymbolicExecution) se).getListCfgNode();
+
         if (se.getConstraints().getNormalConstraints().size() + se.getConstraints().getNullorNotNullConstraints().size() > 0) {
 			/*
 			 * Solve the path constraints
