@@ -126,7 +126,10 @@ public class CallGraphGeneration implements ICallGraphGeneration {
             }
         }
 
-        addToList(tmp, tmp.get(0));
+        if(tmp.size() >0){
+            addToList(tmp, tmp.get(0));
+        }
+
         return new CallGraph(tmp);
     }
 
@@ -217,7 +220,7 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         callGraph.setIdforAllNodes();
         try {
             return callGraph.getAllNodes().get(0);
-        }catch (NullPointerException ex){
+        }catch (Exception ex){
             return null;
         }
     }
