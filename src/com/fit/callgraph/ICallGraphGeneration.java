@@ -1,12 +1,11 @@
 package com.fit.callgraph;
 
-import com.fit.tree.object.IFunctionNode;
+
+import com.vnu.fit.graph.models.ast.AbstractNode;
 
 public interface ICallGraphGeneration {
 
-    public ICallGraph generateCallGraph();
-    IFunctionNode getFunctionNode();
-
-    void setFunctionNode(IFunctionNode functionNode);
-
+    ICallGraph generateCallGraph();
+    AbstractNode getAbstractNode();
+    void setAbstractNode(AbstractNode abstractNode);
 }

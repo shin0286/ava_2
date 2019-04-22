@@ -4,27 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CallGraphNode implements ICallGraphNode {
+    private String name;
     private String content;
-    private ICallGraphNode parentNode;
+    private List<ICallGraphNode> parentsNodeList = new ArrayList<>();
     private List<ICallGraphNode> targetNodeList = new ArrayList<>();
     private boolean isVisited;
     private int id;
+    private String astLoc;
 
     public CallGraphNode(){
 
     }
 
-    public CallGraphNode(String content){
-        this.content = content;
+    public CallGraphNode(String name){
+        this.name = name;
     }
+
+
     @Override
-    public String getContent() {
-        return content;
+    public String getName() {
+        return name;
     }
 
     @Override
-    public void setContent(String content) {
-        content = content;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -34,7 +38,27 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setId(int id) {
-        id = id;
+        this.id = id;
+    }
+
+    @Override
+    public String getContent() {
+        return content;
+    }
+
+    @Override
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    @Override
+    public String getAstLocation() {
+        return astLoc;
+    }
+
+    @Override
+    public void setASTFileLocation(String astLoc) {
+        this.astLoc = astLoc;
     }
 
     @Override
@@ -44,7 +68,7 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setListTarget(List<ICallGraphNode> listTarget) {
-        targetNodeList = listTarget;
+        this.targetNodeList = listTarget;
     }
 
     @Override
@@ -54,6 +78,46 @@ public class CallGraphNode implements ICallGraphNode {
 
     @Override
     public void setVisited(boolean isVisited) {
-        isVisited = isVisited;
+        this.isVisited = isVisited;
+    }
+
+    @Override
+    public boolean isMultipleTarget() {
+        return false;
+    }
+
+    @Override
+    public List<ICallGraphNode> getListParents() {
+        return parentsNodeList;
+    }
+
+    @Override
+    public void setListParents(List<ICallGraphNode> listParents) {
+        this.parentsNodeList = listParents;
+    }
+
+    @Override
+    public boolean contains(ICallGraphNode child) {
+        while (child != null) {
+            if (child == this)
+                return true;
+            //child = child.getParent();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean shouldDisplayInCG() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldDisplayInSameLine() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldInBlock() {
+        return false;
     }
 }
