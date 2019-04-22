@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-params>
+    <function>
+        <name>mmin</name>
+        <summary>(x>y)?y:x</summary>
+    </function>
+    <function>
+        <name>mmin3</name>
+        <summary>(x>=y)?y:x</summary>
+    </function>
+</project-params>

@@ -4,6 +4,7 @@ import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.cfg.ICFG;
 import com.fit.cfg.ICFGGeneration;
 import com.fit.cfg.object.AbstractConditionLoopCfgNode;
+import com.fit.cfg.object.CfgNode;
 import com.fit.cfg.object.EndFlagCfgNode;
 import com.fit.cfg.object.ICfgNode;
 import com.fit.cfg.testpath.IStaticSolutionGeneration;
@@ -56,11 +57,32 @@ public class PossibleTestpathGenerationForLoop extends AbstractPossibleTestpathG
     }
 
     public static void main(String[] args) throws Exception {
-        ProjectParser parser = new ProjectParser(new File(Paths.SYMBOLIC_EXECUTION_TEST));
+        ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\ducanh\\SymbolicExecutionTest\\"));
 
+//        ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2"));
+//        IFunctionNode function = (IFunctionNode) Search
+//                .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "Merge1(int[],int[],int[]").get(0);
+//        logger.debug(function.getAST().getRawSignature());
+//
+//        // Generate cfg
+//        CFGGenerationforBranchvsStatementCoverage cfgGen = new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
+//        ICFG cfg = cfgGen.generateCFG();
+//        cfg.setFunctionNode(function);
+//        cfg.setIdforAllNodes();
+//        cfg.resetVisitedState();
+//
+//        // Generate test path for loop
+//        AbstractConditionLoopCfgNode loopCondition = (AbstractConditionLoopCfgNode) cfg
+//                .findFirstCfgNodeByContent("i < 3");
+//        PossibleTestpathGenerationForLoop tpGen = new PossibleTestpathGenerationForLoop(cfg, loopCondition);
+//        tpGen.setMaximumIterationsForOtherLoops(1);
+//        tpGen.setIterationForUnboundedTestingLoop(5);
+//        tpGen.setAddTheEndTestingCondition(true);
+//        tpGen.generateTestpaths();
+//
+//        logger.debug("num test path = " + tpGen.getPossibleTestpaths().size());
         IFunctionNode function = (IFunctionNode) Search
-                .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "Merge1(int[3],int[3],int[6])").get(0);
-        logger.debug(function.getAST().getRawSignature());
+                .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "loop2(int)").get(0);
 
         // Generate cfg
         CFGGenerationforBranchvsStatementCoverage cfgGen = new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
@@ -71,14 +93,34 @@ public class PossibleTestpathGenerationForLoop extends AbstractPossibleTestpathG
 
         // Generate test path for loop
         AbstractConditionLoopCfgNode loopCondition = (AbstractConditionLoopCfgNode) cfg
-                .findFirstCfgNodeByContent("i < 3");
+                .findFirstCfgNodeByContent("a<5");
         PossibleTestpathGenerationForLoop tpGen = new PossibleTestpathGenerationForLoop(cfg, loopCondition);
-        tpGen.setMaximumIterationsForOtherLoops(4);
-        tpGen.setIterationForUnboundedTestingLoop(10);
-        tpGen.setAddTheEndTestingCondition(true);
+        tpGen.setIterationForUnboundedTestingLoop(5);
+        tpGen.setMaximumIterationsForOtherLoops(0);
         tpGen.generateTestpaths();
+        System.out.println("Possible testpath: " + tpGen.getPossibleTestpaths());
+        System.out.println("CFG Node " + tpGen.cfg.getAllNodes());
 
-        logger.debug("num test path = " + tpGen.getPossibleTestpaths().size());
+//        IFunctionNode function = (IFunctionNode) Search.searchNodes(parser.getRootTree(), new FunctionNodeCondition(),
+//                "loop11(int,unsigned char*,unsigned char*)").get(0);
+//
+//        // Generate cfg
+//        CFGGenerationforBranchvsStatementCoverage cfgGen = new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
+//        ICFG cfg = cfgGen.generateCFG();
+//        cfg.setFunctionNode(function);
+//        cfg.setIdforAllNodes();
+//        cfg.resetVisitedState();
+//
+//        // Generate test path for loop
+//        AbstractConditionLoopCfgNode loopCondition = (AbstractConditionLoopCfgNode) cfg
+//                .findFirstCfgNodeByContent("i < n");
+//        PossibleTestpathGenerationForLoop tpGen = new PossibleTestpathGenerationForLoop(cfg, loopCondition);
+//        tpGen.setIterationForUnboundedTestingLoop(3);
+//        tpGen.setMaximumIterationsForOtherLoops(1);
+//        tpGen.generateTestpaths();
+//        System.out.println("Possible testpath: " + tpGen.getPossibleTestpaths());
+//        System.out.println("Post condition: " + tpGen.cfg.getAllNodes());
+
     }
 
     @Override
@@ -141,6 +183,7 @@ public class PossibleTestpathGenerationForLoop extends AbstractPossibleTestpathG
                 traverseCFG(trueNode, tp, testpaths, false);
             tp.remove(tp.size() - 1);
         }
+//        System.out.println(tp);
     }
 
 }

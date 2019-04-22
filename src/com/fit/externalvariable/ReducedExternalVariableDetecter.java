@@ -44,15 +44,15 @@ public class ReducedExternalVariableDetecter implements IExternalVariableDetecte
     }
 
     public static void main(String[] args) {
-        ProjectParser parser = new ProjectParser(new File("..\\ava\\data-test\\ducanh\\ExternalVariableDetecterTest"));
+        ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\"));
 
         IFunctionNode function = (IFunctionNode) Search
-                .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "C::test(A*,int)").get(0);
+                .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "sum(int,int)").get(0);
 
         System.out.println(function.getAST().getRawSignature());
 
         for (INode n : function.getReducedExternalVariables())
-            System.out.println(n.getAbsolutePath());
+            System.out.println(n.getName());
     }
 
     @Override

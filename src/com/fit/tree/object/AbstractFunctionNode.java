@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import com.fit.normalizer.*;
 import org.apache.log4j.Logger;
 import org.eclipse.cdt.core.dom.ast.IASTFileLocation;
 import org.eclipse.cdt.core.dom.ast.IASTFunctionDefinition;
@@ -28,21 +29,6 @@ import com.fit.config.Settingv2;
 import com.fit.externalvariable.ExternalVariableDetecter;
 import com.fit.externalvariable.ReducedExternalVariableDetecter;
 import com.fit.gui.testreport.object.INameRule;
-import com.fit.normalizer.ArgumentTypeNormalizer;
-import com.fit.normalizer.ClassvsStructNormalizer;
-import com.fit.normalizer.ConditionCovertNormalizer;
-import com.fit.normalizer.EndStringNormalizer;
-import com.fit.normalizer.EnumNormalizer;
-import com.fit.normalizer.ExternNormalizer;
-import com.fit.normalizer.FunctionNameNormalizer;
-import com.fit.normalizer.FunctionNormalizer;
-import com.fit.normalizer.MacroNormalizer2;
-import com.fit.normalizer.NullPtrNormalizer;
-import com.fit.normalizer.PrivateToPublicNormalizer;
-import com.fit.normalizer.SetterandGetterFunctionNormalizer;
-import com.fit.normalizer.SwitchCaseNormalizer;
-import com.fit.normalizer.TernaryConvertNormalizer;
-import com.fit.normalizer.ThrowNormalizer;
 import com.fit.testdatagen.module.DataTreeGeneration;
 import com.fit.testdatagen.module.IDataTreeGeneration;
 import com.fit.testdatagen.testdatainit.VariableTypes;
@@ -422,6 +408,7 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 				fnNormalizer.addNormalizer(new MacroNormalizer2());
 			}
 
+            fnNormalizer.addNormalizer(new FunctionCallNormalizer());
 			fnNormalizer.addNormalizer(new FunctionNameNormalizer());
 			fnNormalizer.addNormalizer(new ArgumentTypeNormalizer());
 			fnNormalizer.addNormalizer(new TernaryConvertNormalizer());
@@ -448,6 +435,7 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 				fnNormalizer.addNormalizer(new MacroNormalizer2());
 			}
 
+            fnNormalizer.addNormalizer(new FunctionCallNormalizer());
 			fnNormalizer.addNormalizer(new ArgumentTypeNormalizer());
 			fnNormalizer.addNormalizer(new TernaryConvertNormalizer());
 			fnNormalizer.addNormalizer(new ConditionCovertNormalizer());
@@ -472,6 +460,7 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 		if (fnNormalizeFunctionToDisplayCFG == null) {
 			FunctionNormalizer fnNormalizer = new FunctionNormalizer();
 			fnNormalizer.setFunctionNode(this);
+            fnNormalizer.addNormalizer(new FunctionCallNormalizer());
 			fnNormalizer.addNormalizer(new TernaryConvertNormalizer());
 			fnNormalizer.addNormalizer(new ConditionCovertNormalizer());
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());
@@ -494,6 +483,7 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 				fnNormalizer.addNormalizer(new MacroNormalizer2());
 			}
 			// end test
+            fnNormalizer.addNormalizer(new FunctionCallNormalizer());
 			fnNormalizer.addNormalizer(new TernaryConvertNormalizer());
 			fnNormalizer.addNormalizer(new ConditionCovertNormalizer());
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());

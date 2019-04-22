@@ -58,12 +58,15 @@ public class PathConstraint {
 
 	@Override
 	public String toString() {
-		if (cfgNode != null)
+		if (cfgNode != null) {
 			return constraint + "\t(" + (type == CREATE_FROM_DECISION ? "decision - " : "additional")
 					+ cfgNode.getContent() + ")";
+		}
 		else
 			return constraint + "\t(" + (type == CREATE_FROM_DECISION ? "decision" : "additional") + ")";
 	}
+
+
 
 	public static final int UNSPECIFIED = -1;
 

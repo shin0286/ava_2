@@ -63,15 +63,16 @@ public class CFGGenerationforBranchvsStatementCoverage implements ICFGGeneration
 	}
 
 	public static void main(String[] args) throws Exception {
-		ProjectParser parser = new ProjectParser(new File(Paths.SYMBOLIC_EXECUTION_TEST));
+		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\"));
 
 		INode function = Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "Merge2(int[],int[],int[],int,int)")
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "mmin3(int,int,int)")
 				.get(0);
 
-		System.out.println(((IFunctionNode) function).getAST().getRawSignature());
+//		System.out.println(((IFunctionNode) function).getAST().getRawSignature());
 		FunctionNormalizer fnNorm = ((IFunctionNode) function).normalizedASTtoInstrument();
 		String normalizedCoverage = fnNorm.getNormalizedSourcecode();
+//		System.out.println(normalizedCoverage);
 		IFunctionNode clone = (IFunctionNode) function.clone();
 		clone.setAST(Utils.getFunctionsinAST(normalizedCoverage.toCharArray()).get(0));
 
@@ -79,7 +80,7 @@ public class CFGGenerationforBranchvsStatementCoverage implements ICFGGeneration
 				ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
 		ICFG cfg = cfgGen.generateCFG();
 		cfg.setIdforAllNodes();
-		System.out.println(cfg.toString());
+//		System.out.println(cfg.toString());
 	}
 
 	@Override

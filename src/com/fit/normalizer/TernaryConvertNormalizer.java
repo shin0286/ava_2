@@ -34,11 +34,11 @@ public class TernaryConvertNormalizer extends AbstractFunctionNormalizer
     public static void main(String[] args) throws Exception {
         String[] test = new String[]{
                 "int test(bool a){\nreturn a? 1:0;}",
-                "void test(){\nint c = (a>b) ? a : b;\nc = a>b&&1==0 ? a : b;\n}",
+                "void test(){\nint c = (a>b) ? a : (b>d) ? b : d;\nc = a>b&&1==0 ? a : b;\n}",
                 "int ConditionalTest(int x){\n	int t = x > 0 ? -1 : 1;\nif (t > 0)\n		return 1;"};
 
         FunctionNode fn = new FunctionNode();
-        fn.setAST(Utils.getFunctionsinAST(test[0].toCharArray()).get(0));
+        fn.setAST(Utils.getFunctionsinAST(test[1].toCharArray()).get(0));
         TernaryConvertNormalizer norm = new TernaryConvertNormalizer();
         norm.setFunctionNode(fn);
         norm.normalize();
@@ -60,7 +60,6 @@ public class TernaryConvertNormalizer extends AbstractFunctionNormalizer
             // Ex: bool greater = x > y
             normalizeSourcecode = normalizeStatement(declaration
                     .getRawSignature());
-
 		/*
          * Analyze type 2
 		 */
@@ -68,19 +67,20 @@ public class TernaryConvertNormalizer extends AbstractFunctionNormalizer
                 normalizeSourcecode.toCharArray()).get(0);
         List<ICPPASTBinaryExpression> binaryASTs = Utils
                 .getBinaryExpressions(newFn);
-
-        for (ICPPASTBinaryExpression binaryAST : binaryASTs)
+        for (ICPPASTBinaryExpression binaryAST : binaryASTs) {
+            System.out.println(binaryAST.getRawSignature());
             if (binaryAST.getOperator() == IASTBinaryExpression.op_assign) {
                 IASTNode right = binaryAST.getOperand2();
                 IASTNode left = binaryAST.getOperand1();
                 if (right instanceof CPPASTConditionalExpression
                         && (left instanceof IASTIdExpression || left instanceof ICPPASTFieldReference))
-					/*
-					 * Ex: greater = x == y
-					 */
+                    /*
+                     * Ex: greater = x == y
+                     */
                     normalizeSourcecode = normalizeStatement(binaryAST
                             .getRawSignature());
             }
+        }
     }
 
     public String normalizeStatement(String source) {
@@ -119,7 +119,7 @@ public class TernaryConvertNormalizer extends AbstractFunctionNormalizer
 
                     String cond = m.group("cond"), oTrue = m.group("oTrue"), oFalse = m
                             .group("oFalse");
-
+                    System.out.println("Cond: " + cond);
                     m.appendReplacement(sb, Matcher.quoteReplacement(String
                             .format("%s %s;if (%s) %s = %s; else %s = %s",
                                     typeVariable.getRawSignature(),

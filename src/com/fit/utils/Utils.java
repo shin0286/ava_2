@@ -40,12 +40,7 @@ import org.eclipse.cdt.core.dom.ast.IASTStatement;
 import org.eclipse.cdt.core.dom.ast.IASTSwitchStatement;
 import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.core.dom.ast.IASTWhileStatement;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTArraySubscriptExpression;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTBinaryExpression;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTFieldReference;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTFunctionDefinition;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTLiteralExpression;
-import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTUnaryExpression;
+import org.eclipse.cdt.core.dom.ast.cpp.*;
 import org.eclipse.cdt.core.dom.ast.gnu.c.GCCLanguage;
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
 import org.eclipse.cdt.core.index.IIndex;
@@ -935,6 +930,25 @@ public class Utils implements IRegex {
 
 		ast.accept(visitor);
 		return literalASTs;
+	}
+
+	public static List<ICPPASTFunctionCallExpression> getFunctionCallExpression(IASTNode ast) {
+		List<ICPPASTFunctionCallExpression> functionCallASTs = new ArrayList<>();
+
+		ASTVisitor visitor = new ASTVisitor() {
+
+			@Override
+			public int visit(IASTExpression name) {
+				if (name instanceof ICPPASTFunctionCallExpression)
+					functionCallASTs.add((ICPPASTFunctionCallExpression) name);
+				return ASTVisitor.PROCESS_CONTINUE;
+			}
+		};
+
+		visitor.shouldVisitExpressions = true;
+
+		ast.accept(visitor);
+		return functionCallASTs;
 	}
 
 	public static String getFileExtension(String path) {
