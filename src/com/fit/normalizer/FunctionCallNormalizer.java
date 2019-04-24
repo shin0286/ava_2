@@ -1,5 +1,6 @@
 package com.fit.normalizer;
 
+import com.fit.callgraph.CallGraphGeneration;
 import com.fit.parser.projectparser.ProjectParser;
 import com.fit.tree.object.IFunctionNode;
 import com.fit.utils.Utils;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionCallNormalizer extends AbstractFunctionNormalizer implements IFunctionNormalizer{
+    String filePath;
+
     public FunctionCallNormalizer (){
     }
 
@@ -49,16 +52,16 @@ public class FunctionCallNormalizer extends AbstractFunctionNormalizer implement
         }
     }
 
-    public String replaceFunctionCallWithSummary (String function, String functionName) throws Exception{
-        String filepath = "F:\\New folder\\ava_ver2\\Sample_for_R1_2.xml";
-        List<String> sumList = readSummaryFile(filepath);
+    public String replaceFunctionCallWithSummary (String functionCall, String functionName) throws Exception{
+        List<String> sumList = readSummaryFile(filePath);
+        CallGraphGeneration callGraphGeneration = new CallGraphGeneration();
         String summary="";
         for (String sum : sumList){
             if (sum.startsWith(functionName)){
                 String temp[] = sum.split("/");
                 summary = temp[1];
                 summary = summary.replace("~", "<");
-                normalizeSourcecode = normalizeSourcecode.replace(function,summary);
+                normalizeSourcecode = normalizeSourcecode.replace(functionCall,summary);
             }
         }
         return normalizeSourcecode;
@@ -77,7 +80,8 @@ public class FunctionCallNormalizer extends AbstractFunctionNormalizer implement
             Node sumNode = sumList.item(i);
             if (sumNode.getNodeType() == Node.ELEMENT_NODE){
                 Element sumElement = (Element) sumNode;
-                String sum = sumElement.getElementsByTagName("name").item(0).getTextContent() + "/" + sumElement.getElementsByTagName("summary").item(0).getTextContent(); ;
+                String sum = sumElement.getElementsByTagName("name").item(0).getTextContent() + "/" + sumElement.getElementsByTagName("full-summary").item(0).getTextContent()
+                        + "/" + sumElement.getElementsByTagName("short-summary").item(0).getTextContent(); ;
                 summary.add(sum);
             }
         }

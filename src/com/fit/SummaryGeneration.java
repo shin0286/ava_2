@@ -8,6 +8,7 @@ import com.fit.cfg.testpath.*;
 import com.fit.config.Bound;
 import com.fit.config.FunctionConfig;
 import com.fit.config.ISettingv2;
+import com.fit.externalvariable.ReducedExternalVariableDetecter;
 import com.fit.normalizer.FunctionNormalizer;
 import com.fit.normalizer.UnaryNormalizer;
 import com.fit.parser.projectparser.ProjectParser;
@@ -18,6 +19,7 @@ import com.fit.testdatagen.se.memory.VariableNodeTable;
 import com.fit.tree.object.FunctionNode;
 import com.fit.tree.object.IFunctionNode;
 import com.fit.tree.object.INode;
+import com.fit.tree.object.IVariableNode;
 import com.fit.utils.Utils;
 import com.fit.utils.search.FunctionNodeCondition;
 import com.fit.utils.search.Search;
@@ -26,6 +28,8 @@ import org.eclipse.cdt.core.dom.ast.IASTNode;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTFunctionDefinition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,8 +75,12 @@ public class SummaryGeneration {
 
     private HashMap<String,Integer> cfgMap = new HashMap<>();
 
-    public SummaryGeneration (String sumPath, String functionPath, String functionName) throws Exception{
-        ProjectParser parser = new ProjectParser(new File(functionPath));
+    public String externalParameterFile;
+
+    public String summaryFile;
+
+    public SummaryGeneration (String projectPath, String functionName) throws Exception{
+        ProjectParser parser = new ProjectParser(new File(projectPath));
         IFunctionNode function = (IFunctionNode) Search
                 .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), functionName).get(0);
 //        System.out.println(function.getAST().getRawSignature());
@@ -88,16 +96,20 @@ public class SummaryGeneration {
 
         // Normalize function
         FunctionNormalizer fnNormalizer = function.normalizedASTtoInstrument();
+        String [] projectPathComponent = projectPath.split("\\");
+        String projectName = projectPathComponent[projectPathComponent.length-1];
+        summaryFile = projectPath + projectName + "_summary";
+        externalParameterFile = projectPath + projectName + "_externVariable.xml"
 
         String newFunctionInStr = fnNormalizer.getNormalizedSourcecode();
         ICPPASTFunctionDefinition newAST = Utils.getFunctionsinAST(newFunctionInStr.toCharArray()).get(0);
         ((FunctionNode) function).setAST(newAST);
-        writeSummaryToFile(sumPath, functionPath, function, functionName);
+        writeSummaryToFile(summaryFile, projectPath, function, functionName);
 
     }
 
     public static void main(String[] args) throws Exception {
-        SummaryGeneration sm = new SummaryGeneration("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\","mmin3(int,int,int)");
+        SummaryGeneration sm = new SummaryGeneration("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\","mmin3(int,int,int)");
     }
 
     public void writeSummaryToFile(String sumFilepath, String sourceFilePath, IFunctionNode function, String functionName) throws Exception{
@@ -110,12 +122,6 @@ public class SummaryGeneration {
         System.out.println(summary);
     }
 
-//    public void read (){
-//        File file = new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\Sample_for_R1_2.xml");
-//        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-//        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-//        Document document = documentBuilder.parse(file);
-//    }
 
     public void writeToXml(String sumFilepath, String sourceFilePath, String functionName, String summary) throws Exception{
         File file = new File(sumFilepath);
@@ -196,61 +202,69 @@ public class SummaryGeneration {
         return summary;
     }
 
-    public void replaceUsedParameter(ArrayList<String> localParam, ArrayList<String> instanceParam) {
-        String localValue = "";
-        for (int i=0; i<instanceParam.size(); i++){
-            boolean isDef = false;
-            for (int j=0; j<listCfgNode.size(); j++){
-                ICfgNode cfgNode = listCfgNode.get(j);
-                String node = cfgNode.getContent();
-                if (node.contains(instanceParam.get(i) + " ")){
-                    int statementType = cfgMap.get(node);
-                    if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(instanceParam.get(i)) < node.indexOf('=')){
-                        isDef = true;
-                        localValue = (node.split("="))[1];
-                        localValue = localValue.replace(" ", "");
-                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
-                        node = node.replace(instanceParam.get(i), localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    } else if (cfgMap.get(node) == RETURN){
-                        String returnValue = node.split(" ")[1];
-                        node = node.replace(returnValue, localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    }
-                }
-            }
-        }
-
-        for (int i=0; i<localParam.size(); i++){
-            boolean isDef = false;
-            for (int j=0; j<listCfgNode.size(); j++){
-                String node = listCfgNode.get(j).getContent();
-                if (node.contains(" " + localParam.get(i)) || node.contains(localParam.get(i) + " ")){
-                    int statementType = cfgMap.get(node);
-                    System.out.println("node " + node);
-                    if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(localParam.get(i)) < node.indexOf('=')){
-                        isDef = true;
-                        localValue = (node.split("="))[1];
-                        localValue = localValue.replace(" ", "");
-                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
-                        node = node.replace(localParam.get(i), localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    } else if (cfgMap.get(node) == RETURN){
-                        String returnValue = node.split(" ")[1];
-                        node = node.replace(returnValue, localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    }
+    private void replaceParameter(String parameter, String localValue){
+        boolean isDef = false;
+        for (int j=0; j<listCfgNode.size(); j++){
+            ICfgNode cfgNode = listCfgNode.get(j);
+            String node = cfgNode.getContent();
+            if (node.contains(parameter + " ")){
+                int statementType = cfgMap.get(node);
+                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(parameter) < node.indexOf('=')){
+                    isDef = true;
+                    localValue = (node.split("="))[1];
+                    localValue = localValue.replace(" ", "");
+                } else if (cfgMap.get(node) == CONDITION && isDef == true){
+                    node = node.replace(parameter, localValue);
+                    cfgMap.put(node,statementType);
+                    listCfgNode.get(j).setContent(node);
+                } else if (cfgMap.get(node) == RETURN){
+                    String returnValue = node.split(" ")[1];
+                    node = node.replace(returnValue, localValue);
+                    cfgMap.put(node,statementType);
+                    listCfgNode.get(j).setContent(node);
                 }
             }
         }
     }
 
-    void replaceExternalVariable(ArrayList<String> externalVar, String filepath){
+    public void replaceUsedParameter(ArrayList<String> localParam, ArrayList<String> instanceParam) {
+        String localValue = "";
+        for (String param : instanceParam){
+            replaceParameter(param, localValue);
+        }
+        for (String param : localParam){
+            replaceParameter(param, localValue);
+        }
+    }
 
+    void replaceExternalVariable(IFunctionNode function) throws Exception{
+        ReducedExternalVariableDetecter externalVariable = new ReducedExternalVariableDetecter(function);
+        List<IVariableNode> externalVariables = function.getReducedExternalVariables();
+        HashMap<String, String> externalVarMap = new HashMap<>();
+        ArrayList<String> externalVarList = new ArrayList<>();
+        for (INode node : externalVariables){
+            externalVarMap.put(node.getName(), node.getAbsolutePath());
+            externalVarList.add(node.getName());
+        }
+        File xmlFile = new File(externalParameterFile);
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(xmlFile);
+
+        document.getDocumentElement().normalize();
+        NodeList varList = document.getElementsByTagName("extern-var");
+        for (int i=0; i<varList.getLength(); i++) {
+            Node varNode = varList.item(i);
+            if (varNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element varElement = (Element) varNode;
+                String varName = varElement.getElementsByTagName("name").item(0).getTextContent();
+                String varPath = varElement.getElementsByTagName("location").item(0).getTextContent();
+                if (externalVarMap.containsKey(varName) && externalVarMap.get(varName).equals(varPath)){
+                    String externValue = ((varElement.getElementsByTagName("value").item(0).getTextContent()).split(","))[0];
+                    replaceParameter(varName, externValue);
+                }
+            }
+        }
     }
 
     public ArrayList<String> generateSummaryOfATestpath (IFullTestpath testpath, Parameter paramaters, IFunctionNode function) throws Exception {
@@ -262,10 +276,6 @@ public class SummaryGeneration {
         ArrayList<String> instanceParam = new ArrayList<>();
 
         ArrayList<String> externParam = new ArrayList<>();
-
-        for (INode node : function.getReducedExternalVariables()){
-            externParam.add(node.getName());
-        }
 
         INormalizedTestpath normalizedTestpath = null;
         if (testpath instanceof INormalizedTestpath)
@@ -312,6 +322,7 @@ public class SummaryGeneration {
 
         if (!se.isAlwaysFalse()) {
             replaceUsedParameter(localParam, instanceParam);
+            replaceExternalVariable(function);
             for (ICfgNode cfgNode : listCfgNode) {
                 if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
                     // nothing to do
