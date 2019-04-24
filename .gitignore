@@ -10,3 +10,4 @@ nio-data.txt
 Paths.java
 local/setting.properties
 src/log4j.properties
+data-test/
