@@ -1,5 +1,6 @@
 package com.fit.callgraph;
 
+import com.fit.callgraph.object.CallGraphNode;
 import com.fit.callgraph.object.ICallGraphNode;
 import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.config.Paths;
@@ -10,14 +11,17 @@ import com.fit.tree.object.INode;
 import com.fit.utils.Utils;
 import com.fit.utils.search.FunctionNodeCondition;
 import com.fit.utils.search.Search;
+import com.vnu.fit.graph.GraphCreator;
+import com.vnu.fit.graph.models.Project;
+import com.vnu.fit.graph.models.ast.AbstractNode;
+import com.vnu.fit.graph.models.ast.FunctionNode;
+import com.vnu.fit.graph.models.dependences.Dependency;
 import org.apache.log4j.Logger;
-import org.eclipse.cdt.core.dom.ast.IASTFunctionDeclarator;
 import org.eclipse.cdt.core.dom.ast.IASTNode;
-import org.eclipse.cdt.core.dom.ast.IASTStatement;
-import org.eclipse.cdt.internal.core.dom.parser.c.CASTFunctionCallExpression;
-import org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTFunctionCallExpression;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author namdv
@@ -25,16 +29,14 @@ import java.io.File;
  */
 public class CallGraphGeneration implements ICallGraphGeneration {
     final static Logger logger = Logger.getLogger(CFGGenerationforBranchvsStatementCoverage.class);
-    private IFunctionNode functionNode;
+    private AbstractNode abstractNode;
     private ICallGraphNode BEGIN;
+    private String projectPath;
 
 
-    public static void main(String[] args) {
-        String path = Paths.TSDV_R1;
-        CallGraphGeneration graphGeneration = new CallGraphGeneration();
-        graphGeneration.init(path);
-
+    public CallGraphGeneration() {
     }
+
 
     public void init(String path){
         try {
@@ -59,46 +61,174 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         return node == null? "": node.getRawSignature();
     }
 
-    public boolean isFunctionDeclaratorNode(IASTStatement statement){
-        if(statement instanceof IASTFunctionDeclarator){
-            return true;
-        }else {
-            return false;
-        }
+
+    public INode findMainFunction(INode node){
+
+        return null;
     }
 
-    public boolean isFunctionCallExpression(IASTStatement statement){
-        if(statement instanceof CASTFunctionCallExpression || statement instanceof CPPASTFunctionCallExpression){
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-    public String findMainFunction(File projectPath){
-        String result = "";
-        return result;
-    }
-    public void visitFunction(IASTStatement statement, ICallGraphNode begin){
+    public void doInFunction(){
 
     }
 
     @Override
     public ICallGraph generateCallGraph() {
-        return null;
+        return parse(abstractNode, projectPath);
     }
 
     @Override
-    public IFunctionNode getFunctionNode() {
-        return functionNode;
+    public AbstractNode getAbstractNode() {
+        return abstractNode;
     }
 
     @Override
-    public void setFunctionNode(IFunctionNode functionNode) {
-        functionNode = functionNode;
+    public void setAbstractNode(AbstractNode abstractNode) {
+        this.abstractNode = abstractNode;
     }
 
-    private ICallGraph parse(IFunctionNode node){
-        return null;
+
+    public ICallGraph parse(AbstractNode abstractNode, String path){
+        List<ICallGraphNode> result = new ArrayList<>();
+        abstractNode = Project.getInstance().getRoot();
+
+        List<AbstractNode> lstChilds = abstractNode.getChildren();
+        List<FunctionNode> functionNodeList = new ArrayList<>();
+
+        List<ICallGraphNode> tmp = new ArrayList<>();
+
+        for(AbstractNode childNode : lstChilds ){
+
+            List<Dependency> lstDepend = childNode.getDependencyList();
+            for(Dependency dependency : lstDepend){
+                if(dependency.getType() == Dependency.Type.INVOCATION){
+                  //  System.out.println(childNode.toString());
+                    functionNodeList.add((FunctionNode) childNode);
+                    ICallGraphNode callGraphNode = convertAbstractNodeToCallGraphNode2(childNode);
+                    result.add(callGraphNode);
+                }
+            }
+
+        }
+
+        for(int i = 0; i< result.size(); i++){
+            if(checkExist(tmp, result.get(i).getName()) == false){
+                tmp.add(result.get(i));
+            }
+        }
+
+        result = new ArrayList<>();
+        result.addAll(tmp);
+
+        tmp = new ArrayList<>();
+        for(int i = 0; i< result.size(); i++){
+            if(result.get(i).getName().contains("main()")){
+                tmp.add(result.get(i));
+            }
+        }
+
+        if(tmp.size() >0){
+            addToList(tmp, tmp.get(0));
+        }
+
+        return new CallGraph(tmp);
+    }
+
+    public void addToList(List<ICallGraphNode> list, ICallGraphNode node){
+        List<ICallGraphNode> listTarget = node.getListTarget();
+        for(int i = 0; i< list.size(); i++){
+
+            for(int j = 0; j< listTarget.size(); j++){
+                if(checkExist(list, listTarget.get(j).getName()) == false){
+                    list.add(listTarget.get(j));
+                    addToList(list, listTarget.get(j));
+                }
+            }
+
+        }
+    }
+    private static boolean checkExist(List<ICallGraphNode> functionNodeList, String funcName) {
+        for (ICallGraphNode node : functionNodeList) {
+            if (node.getName().equals(funcName)) { // I used getId(), replace that by the accessor you actually need
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /*public List<ICallGraphNode> getListParentOfChildNode(AbstractNode node){
+        List<ICallGraphNode> result = new ArrayList<>();
+        List<Dependency> dependencyList = node.getDependencyList();
+        for(int i = 0; i< dependencyList.size(); i++){
+            if(dependencyList.get(i).getType() == Dependency.Type.INVOCATION){
+                if(node.equals(dependencyList.get(i).getEndNode()) ){
+                    ICallGraphNode tmp = convertAbstractNodeToCallGraphNode2(dependencyList.get(i).getBeginNode());
+                    result.add(tmp);
+                } else if(node.equals(dependencyList.get(i).getBeginNode())){
+                    return result;
+                }
+
+            }
+
+        }
+
+        return result;
+    }*/
+
+
+    public List<ICallGraphNode> getListChildOfNode(AbstractNode node){
+        List<ICallGraphNode> result = new ArrayList<>();
+
+        List<Dependency> dependencyList = node.getDependencyList();
+        for(int i = 0; i< dependencyList.size(); i++){
+            if(dependencyList.get(i).getType().equals(Dependency.Type.INVOCATION)){
+                if(!node.equals(dependencyList.get(i).getEndNode())){
+                    ICallGraphNode tmpNode = convertAbstractNodeToCallGraphNode2(dependencyList.get(i).getEndNode());
+                    result.add(tmpNode);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public ICallGraphNode convertAbstractNodeToCallGraphNode2 (AbstractNode abstractNode){
+        ICallGraphNode callGraphNode = new CallGraphNode();
+        callGraphNode.setName(abstractNode.toString());
+        callGraphNode.setContent(abstractNode.getAst(0).getRawSignature());
+        callGraphNode.setASTFileLocation("");
+        //callGraphNode.setListParents(getListParentOfChildNode(abstractNode));
+        callGraphNode.setListTarget(getListChildOfNode(abstractNode));
+        return callGraphNode;
+    }
+
+
+
+    public String getProjectPath() {
+        return projectPath;
+    }
+
+    public void setProjectPath(String projectPath) {
+        this.projectPath = projectPath;
+    }
+
+    public ICallGraphNode getRootCallGraph(CallGraphGeneration graphGeneration, String projectPath){
+        graphGeneration.setProjectPath( projectPath);
+        GraphCreator creator = new GraphCreator(graphGeneration.getProjectPath());
+        creator.execute();
+        graphGeneration.setAbstractNode(Project.getInstance().getRoot());
+        ICallGraph callGraph = graphGeneration.generateCallGraph();
+        callGraph.setIdforAllNodes();
+        try {
+            return callGraph.getAllNodes().get(0);
+        }catch (Exception ex){
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+
+        CallGraphGeneration graphGeneration = new CallGraphGeneration();
+        ICallGraphNode callGraphNode = graphGeneration.getRootCallGraph(graphGeneration, Paths.QLSV);
+
     }
 }
