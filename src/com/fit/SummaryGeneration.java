@@ -9,6 +9,7 @@ import com.fit.config.Bound;
 import com.fit.config.FunctionConfig;
 import com.fit.config.ISettingv2;
 import com.fit.externalvariable.ReducedExternalVariableDetecter;
+import com.fit.gui.main.GUIController;
 import com.fit.normalizer.FunctionNormalizer;
 import com.fit.normalizer.UnaryNormalizer;
 import com.fit.parser.projectparser.ProjectParser;
@@ -75,11 +76,14 @@ public class SummaryGeneration {
 
     private HashMap<String,Integer> cfgMap = new HashMap<>();
 
-    public String externalParameterFile;
+//    public String projectPath = GUIController.projectPath;
 
-    public String summaryFile;
+    //    public String externalParameterFile = GUIController.projectPath + "_exeternVar.xml";
+    public String externalParameterFile =  "F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\Sample_for_R1_2_exeternVar.xml";
 
-    public SummaryGeneration (String projectPath, String functionName) throws Exception{
+//    public String summaryFile = GUIController.projectPath + "_summary.xml";
+
+    public SummaryGeneration (String summaryFile, String projectPath, String functionName) throws Exception{
         ProjectParser parser = new ProjectParser(new File(projectPath));
         IFunctionNode function = (IFunctionNode) Search
                 .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), functionName).get(0);
@@ -96,35 +100,35 @@ public class SummaryGeneration {
 
         // Normalize function
         FunctionNormalizer fnNormalizer = function.normalizedASTtoInstrument();
-        String [] projectPathComponent = projectPath.split("\\");
-        String projectName = projectPathComponent[projectPathComponent.length-1];
-        summaryFile = projectPath + projectName + "_summary";
-        externalParameterFile = projectPath + projectName + "_externVariable.xml"
+//        String [] projectPathComponent = projectPath.split("\\");
+//        String projectName = projectPathComponent[projectPathComponent.length-1];
+//        summaryFile = projectPath + projectName + "_summary";
+//        externalParameterFile = projectPath + projectName + "_externVariable.xml"
 
         String newFunctionInStr = fnNormalizer.getNormalizedSourcecode();
         ICPPASTFunctionDefinition newAST = Utils.getFunctionsinAST(newFunctionInStr.toCharArray()).get(0);
         ((FunctionNode) function).setAST(newAST);
-        writeSummaryToFile(summaryFile, projectPath, function, functionName);
+        writeSummaryToFile(summaryFile, function, functionName);
 
     }
 
     public static void main(String[] args) throws Exception {
-        SummaryGeneration sm = new SummaryGeneration("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\","mmin3(int,int,int)");
+        SummaryGeneration sm = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\","mmin3(int,int,int)");
     }
 
-    public void writeSummaryToFile(String sumFilepath, String sourceFilePath, IFunctionNode function, String functionName) throws Exception{
-        String summary = "";
+    public void writeSummaryToFile(String sumFilepath, IFunctionNode function, String functionName) throws Exception{
+        ArrayList<String> summary = new ArrayList<>();
         if (Utils.containsLoopBlock(function) == true)
             summary = generateSummaryForLoop(function);
         else
             summary = generateSummaryOfAllSimpleTestpath(function);
-        writeToXml(sumFilepath, sourceFilePath, functionName, summary);
-        System.out.println(summary);
+        writeToXml(sumFilepath, functionName, summary.get(0), summary.get(1));
+//        System.out.println(summary);
     }
 
 
-    public void writeToXml(String sumFilepath, String sourceFilePath, String functionName, String summary) throws Exception{
-        File file = new File(sumFilepath);
+    public void writeToXml(String summaryFile, String functionName, String fullSummary, String shortSummary) throws Exception{
+        File file = new File(summaryFile);
         Document doc = null;
         Element root = null;
         if (!file.exists()) {
@@ -140,17 +144,17 @@ public class SummaryGeneration {
         Element function = doc.createElement("function");
         root.appendChild(function);
 
-        Element location = doc.createElement("location");
-        location.appendChild(doc.createTextNode(sourceFilePath));
-        function.appendChild(location);
-
         Element name = doc.createElement("name");
         name.appendChild(doc.createTextNode(functionName));
         function.appendChild(name);
 
-        Element sum = doc.createElement("summary");
-        sum.appendChild(doc.createTextNode(summary));
-        function.appendChild(sum);
+        Element fullsum = doc.createElement("full-summary");
+        fullsum.appendChild(doc.createTextNode(fullSummary));
+        function.appendChild(fullsum);
+
+        Element shortSum = doc.createElement("short-summary");
+        shortSum.appendChild(doc.createTextNode(shortSummary));
+        function.appendChild(shortSum);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -160,11 +164,13 @@ public class SummaryGeneration {
         transformer.transform(source, result);
     }
 
-    String generateSummaryOfAllSimpleTestpath (IFunctionNode function) throws Exception{
+    ArrayList<String> generateSummaryOfAllSimpleTestpath (IFunctionNode function) throws Exception{
+        ArrayList<String> summary = new ArrayList<>();
         String returnType = function.getAST().getChildren()[0].getRawSignature();
-        String summary = "";
+        String fullSum = "";
+        String shortSum = "";
         if (returnType.equals("void")){
-            summary = function.getAST().getChildren()[2].getRawSignature();
+            fullSum = function.getAST().getChildren()[2].getRawSignature();
         } else {
             PossibleTestpathGeneration tpGen = new PossibleTestpathGeneration(
                     new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES)
@@ -180,7 +186,6 @@ public class SummaryGeneration {
                 paramaters.add(n);
 
             int numOfPath = testpath.size();
-            System.out.println("num " + numOfPath);
             for (int i=0; i<numOfPath; i++) {
                 IFullTestpath randomTestpath = testpath.get(i);
                 ArrayList<String> constraintList = generateSummaryOfATestpath(randomTestpath, paramaters, function);
@@ -189,15 +194,20 @@ public class SummaryGeneration {
                     String postCond = constraintList.get(numOfConstraint-1);
                     postCond = postCond.replace("return", "");
                     postCond = postCond.replace(";", "");
+                    if (i == 0){
+                        shortSum = postCond;
+                    }
                     String pathSum = constraintList.get(numOfConstraint-2) + "?" + postCond + ":";
-                    summary += pathSum;
+                    fullSum += pathSum;
                 }
             }
             ArrayList<String> constraintList = generateSummaryOfATestpath(testpath.get(numOfPath-1), paramaters, function);
             String postCond = constraintList.get(constraintList.size()-1);
             postCond = postCond.replace("return", "");
             postCond = postCond.replace(";", "");
-            summary = summary + postCond;
+            fullSum = fullSum + postCond;
+            summary.add(fullSum);
+            summary.add(shortSum);
         }
         return summary;
     }
@@ -322,7 +332,9 @@ public class SummaryGeneration {
 
         if (!se.isAlwaysFalse()) {
             replaceUsedParameter(localParam, instanceParam);
-            replaceExternalVariable(function);
+            if (externParam.size() != 0) {
+                replaceExternalVariable(function);
+            }
             for (ICfgNode cfgNode : listCfgNode) {
                 if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
                     // nothing to do
@@ -356,7 +368,7 @@ public class SummaryGeneration {
         }
         return preCond;
     }
-    public String generateSummaryForLoop (IFunctionNode function) throws Exception{
+    public ArrayList<String> generateSummaryForLoop (IFunctionNode function) throws Exception{
         CFGGenerationforBranchvsStatementCoverage cfgGen = new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
         ICFG cfg = cfgGen.generateCFG();
         cfg.setFunctionNode(function);

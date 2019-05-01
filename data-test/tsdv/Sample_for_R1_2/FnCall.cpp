@@ -15,7 +15,7 @@ int mmin3(int x, int y, int z){
 //    int q;
 //    q = x;
 //    x = q + y;
-    int r = (x<y)?x:y;
+    int r = mmin(x,y);
 //    if (x < r) {
 //        return 0;
 //    }
@@ -38,17 +38,19 @@ int test1(int x, int y){
     else
         return r+2;
 }
-void sum (int a, int b){
-    Sum _sum;
-    _sum.sum = a + b;
-    _sum.num = 2;
-    s = a + b;
-    cout<<s;
-}
+
 // Calculate 1 + 2 + ... + m
 int SumRecursive(int m){
 	if (m <= 0)
 		return 0;
 	else
 		return m + SumRecursive(m-1);
+}
+
+int main(){
+    int x = 1;
+    int y = 3;
+    int z = 2;
+    int r = mmin3(x,y,z);
+    return 0;
 }

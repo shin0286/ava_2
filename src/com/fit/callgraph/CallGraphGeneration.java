@@ -21,7 +21,9 @@ import org.eclipse.cdt.core.dom.ast.IASTNode;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * @author namdv
@@ -101,7 +103,7 @@ public class CallGraphGeneration implements ICallGraphGeneration {
             List<Dependency> lstDepend = childNode.getDependencyList();
             for(Dependency dependency : lstDepend){
                 if(dependency.getType() == Dependency.Type.INVOCATION){
-                  //  System.out.println(childNode.toString());
+                    //  System.out.println(childNode.toString());
                     functionNodeList.add((FunctionNode) childNode);
                     ICallGraphNode callGraphNode = convertAbstractNodeToCallGraphNode2(childNode);
                     result.add(callGraphNode);
@@ -225,10 +227,28 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         }
     }
 
+    public ICallGraphNode getFunctionCallGraph (ICallGraphNode functionCallGraph, String functionName){
+        Queue<ICallGraphNode> nodeQueue = new LinkedList<ICallGraphNode>();
+        ICallGraphNode functionNode = new CallGraphNode();
+        ((LinkedList<ICallGraphNode>) nodeQueue).add(functionCallGraph);
+        while (!nodeQueue.isEmpty()){
+            ICallGraphNode firstNode = nodeQueue.remove();
+            if (firstNode.getName().equals(functionName)) {
+                functionNode = firstNode;
+                break;
+            } else {
+                for (ICallGraphNode node : firstNode.getListTarget()) {
+                    ((LinkedList<ICallGraphNode>) nodeQueue).add(node);
+                }
+            }
+        }
+        return functionNode;
+    }
+
     public static void main(String[] args) {
 
         CallGraphGeneration graphGeneration = new CallGraphGeneration();
-        ICallGraphNode callGraphNode = graphGeneration.getRootCallGraph(graphGeneration, Paths.QLSV);
-
+        ICallGraphNode callGraphNode = graphGeneration.getRootCallGraph(graphGeneration, "..\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\");
+        System.out.println(graphGeneration.getFunctionCallGraph(callGraphNode, "mmin3(int, int, int)").getContent());
     }
 }

@@ -27,6 +27,8 @@ import com.fit.utils.Utils;
 public class GUIController {
 	final static Logger logger = Logger.getLogger(GUIController.class);
 	private GUIView view;
+	public static String projectPath = Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH;
+	public static String functionName = "";
 
 	public GUIController(GUIView view) {
 		this.view = view;
@@ -97,6 +99,7 @@ public class GUIController {
 			view.jtpCFG.openTab(fn.getNewType(), null, fn.toString(),
 					CFGVisualizer.class.getConstructor(IFunctionNode.class, MouseListener.class, int.class, int.class),
 					fn, view.cfgNodeClick, CFGVisualizer.LOGIC_CFG, 0);
+			functionName = fn.getSimpleName();
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(view, "Catch an error when generate CFG!", "Error",
@@ -115,19 +118,19 @@ public class GUIController {
 			String realSourceCodeFile = "";
 			switch (Paths.CURRENT_PROJECT.TYPE_OF_PROJECT) {
 
-			case ISettingv2.PROJECT_ECLIPSE: {
-				realSourceCodeFile = file.getAbsolutePath().replace(Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH,
-						Paths.CURRENT_PROJECT.CLONE_PROJECT_PATH);
-				break;
-			}
-			case ISettingv2.PROJECT_DEV_CPP:
-			case ISettingv2.PROJECT_CUSTOMMAKEFILE:
-			case ISettingv2.PROJECT_CODEBLOCK:
-			case ISettingv2.PROJECT_UNKNOWN_TYPE:
-			case ISettingv2.PROJECT_VISUALSTUDIO:
-				realSourceCodeFile = file.getAbsolutePath().replace(Paths.CURRENT_PROJECT.CLONE_PROJECT_PATH,
-						Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH);
-				break;
+				case ISettingv2.PROJECT_ECLIPSE: {
+					realSourceCodeFile = file.getAbsolutePath().replace(Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH,
+							Paths.CURRENT_PROJECT.CLONE_PROJECT_PATH);
+					break;
+				}
+				case ISettingv2.PROJECT_DEV_CPP:
+				case ISettingv2.PROJECT_CUSTOMMAKEFILE:
+				case ISettingv2.PROJECT_CODEBLOCK:
+				case ISettingv2.PROJECT_UNKNOWN_TYPE:
+				case ISettingv2.PROJECT_VISUALSTUDIO:
+					realSourceCodeFile = file.getAbsolutePath().replace(Paths.CURRENT_PROJECT.CLONE_PROJECT_PATH,
+							Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH);
+					break;
 			}
 
 			return view.jtpFunctionConfiguration.openTab(file.getName(), null, realSourceCodeFile,
