@@ -4,10 +4,8 @@ int s;
 int mmin(int x, int y){
 	if  (x < y)
 		return x;
-	else if (x > y)
-		return y;
 	else
-	    return 1;
+		return y;
 }
 
 int mmin3(int x, int y, int z){

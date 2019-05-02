@@ -1,5 +1,8 @@
 package com.fit;
 
+import com.fit.callgraph.CallGraphGeneration;
+import com.fit.callgraph.object.CallGraphNode;
+import com.fit.callgraph.object.ICallGraphNode;
 import com.fit.cfg.CFGGenerationforBranchvsStatementCoverage;
 import com.fit.cfg.ICFG;
 import com.fit.cfg.ICFGGeneration;
@@ -76,14 +79,24 @@ public class SummaryGeneration {
 
     private HashMap<String,Integer> cfgMap = new HashMap<>();
 
-//    public String projectPath = GUIController.projectPath;
+    public String projectPath = GUIController.projectPath;
 
     //    public String externalParameterFile = GUIController.projectPath + "_exeternVar.xml";
-    public String externalParameterFile =  "F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\Sample_for_R1_2_exeternVar.xml";
+    public String externalParameterFile =  GUIController.projectPath + GUIController.projectName + "_exeternVar.xml";
 
 //    public String summaryFile = GUIController.projectPath + "_summary.xml";
 
-    public SummaryGeneration (String summaryFile, String projectPath, String functionName) throws Exception{
+    ICallGraphNode functionCallNode = new CallGraphNode();
+
+    public String functionInTest = "";
+
+    public SummaryGeneration (String summaryFile, String projectPath, String functionInTest) throws Exception{
+        this.functionInTest = functionInTest;
+        summaryGenerationForFunctionInGraph(projectPath, summaryFile);
+
+    }
+
+    public IFunctionNode getFunctionNode(String projectPath, String functionName) throws Exception {
         ProjectParser parser = new ProjectParser(new File(projectPath));
         IFunctionNode function = (IFunctionNode) Search
                 .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), functionName).get(0);
@@ -108,22 +121,89 @@ public class SummaryGeneration {
         String newFunctionInStr = fnNormalizer.getNormalizedSourcecode();
         ICPPASTFunctionDefinition newAST = Utils.getFunctionsinAST(newFunctionInStr.toCharArray()).get(0);
         ((FunctionNode) function).setAST(newAST);
-        writeSummaryToFile(summaryFile, function, functionName);
-
+        return function;
     }
 
     public static void main(String[] args) throws Exception {
-        SummaryGeneration sm = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\","mmin3(int,int,int)");
+        SummaryGeneration sg = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\", "main()");
     }
 
-    public void writeSummaryToFile(String sumFilepath, IFunctionNode function, String functionName) throws Exception{
+    public ArrayList<String> getListFunctionWithSummary(String summaryFile) throws Exception{
+        ArrayList<String> functionName = new ArrayList<>();
+        List<String> sumList = readSummaryFile(summaryFile);
+        for (String sum : sumList){
+            String temp[] = sum.split("/");
+            functionName.add(temp[0]);
+        }
+        return functionName;
+    }
+
+    public List<String> readSummaryFile (String filepath) throws Exception {
+        File xmlFile = new File(filepath);
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(xmlFile);
+
+        document.getDocumentElement().normalize();
+        ArrayList<String> summary = new ArrayList<>();
+        NodeList sumList = document.getElementsByTagName("function");
+        for (int i=0; i<sumList.getLength(); i++){
+            Node sumNode = sumList.item(i);
+            if (sumNode.getNodeType() == Node.ELEMENT_NODE){
+                Element sumElement = (Element) sumNode;
+                String sum = sumElement.getElementsByTagName("name").item(0).getTextContent() + "/" + sumElement.getElementsByTagName("full-summary").item(0).getTextContent()
+                        + "/" + sumElement.getElementsByTagName("short-summary").item(0).getTextContent(); ;
+                summary.add(sum);
+            }
+        }
+        return summary;
+    }
+
+
+    public LinkedList<ICallGraphNode> getNoSummaryFunction(String functionName, String summaryFile, String projectPath) throws Exception{
+        CallGraphGeneration callGraphGeneration = new CallGraphGeneration();
+        ICallGraphNode mainNode = ((CallGraphGeneration) callGraphGeneration).getRootCallGraph(callGraphGeneration, projectPath);
+        functionCallNode = ((CallGraphGeneration) callGraphGeneration).getFunctionCallGraph(mainNode, functionName);
+        List<String> sumList = getListFunctionWithSummary(summaryFile);
+        LinkedList<ICallGraphNode> listNoSummaryFunction = new LinkedList<>();
+        Queue<ICallGraphNode> nodeQueue = new LinkedList<ICallGraphNode>();
+        ((LinkedList<ICallGraphNode>) nodeQueue).add(functionCallNode);
+        while (!nodeQueue.isEmpty()){
+            ICallGraphNode firstNode = nodeQueue.remove();
+            for (ICallGraphNode node : firstNode.getListTarget()) {
+                node.setName(node.getName().replace(", ", ","));
+                if (!sumList.contains(node.getName())){
+                    listNoSummaryFunction.add(node);
+                    ((LinkedList<ICallGraphNode>) nodeQueue).add(node);
+                }
+            }
+        }
+        return listNoSummaryFunction;
+    }
+
+    public void summaryGenerationForFunctionInGraph(String projectPath, String summaryFile) {
+        try {
+            LinkedList<ICallGraphNode> noSummaryFunction = getNoSummaryFunction(functionInTest, summaryFile, projectPath);
+            while (!noSummaryFunction.isEmpty()) {
+                ICallGraphNode inSummaryGeneration = noSummaryFunction.removeLast();
+                String functionName = inSummaryGeneration.getName();
+                functionName = functionName.replace(", ", ",");
+                IFunctionNode inSumGenerationFunction = getFunctionNode(projectPath, functionName);
+                writeSummaryToFile(summaryFile, inSumGenerationFunction);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void writeSummaryToFile(String sumFilepath, IFunctionNode function) throws Exception{
         ArrayList<String> summary = new ArrayList<>();
         if (Utils.containsLoopBlock(function) == true)
             summary = generateSummaryForLoop(function);
         else
             summary = generateSummaryOfAllSimpleTestpath(function);
-        writeToXml(sumFilepath, functionName, summary.get(0), summary.get(1));
-//        System.out.println(summary);
+        writeToXml(sumFilepath, function.getName(), summary.get(0), summary.get(1));
+        System.out.println(function.getName() + "\tfull sum " + summary.get(0));
     }
 
 
@@ -239,11 +319,55 @@ public class SummaryGeneration {
 
     public void replaceUsedParameter(ArrayList<String> localParam, ArrayList<String> instanceParam) {
         String localValue = "";
-        for (String param : instanceParam){
-            replaceParameter(param, localValue);
+        for (int i=0; i<instanceParam.size(); i++){
+            boolean isDef = false;
+            for (int j=0; j<listCfgNode.size(); j++){
+                ICfgNode cfgNode = listCfgNode.get(j);
+                String node = cfgNode.getContent();
+                if (node.contains(instanceParam.get(i) + " ")){
+                    int statementType = cfgMap.get(node);
+                    if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(instanceParam.get(i)) < node.indexOf('=')){
+                        isDef = true;
+                        localValue = (node.split("="))[1];
+                        localValue = localValue.replace(" ", "");
+                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
+                        node = node.replace(instanceParam.get(i), localValue);
+                        cfgMap.put(node,statementType);
+                        listCfgNode.get(j).setContent(node);
+                    } else if (cfgMap.get(node) == RETURN){
+                        String returnValue = node.split(" ")[1];
+                        node = node.replace(returnValue, localValue);
+                        cfgMap.put(node,statementType);
+                        listCfgNode.get(j).setContent(node);
+                    }
+                }
+            }
         }
-        for (String param : localParam){
-            replaceParameter(param, localValue);
+
+        for (int i=0; i<localParam.size(); i++){
+            boolean isDef = false;
+            for (int j=0; j<listCfgNode.size(); j++){
+                String node = listCfgNode.get(j).getContent();
+                if (node.contains(" " + localParam.get(i)) || node.contains(localParam.get(i) + " ")){
+                    int statementType = cfgMap.get(node);
+                    if ((cfgMap.get(node) == BINARY_ASSIGNMENT || cfgMap.get(node) == DECLARATION)
+                            && node.indexOf(localParam.get(i)) < node.indexOf('=')){
+                        isDef = true;
+                        localValue = (node.split("="))[1];
+                        localValue = localValue.replace(" ", "");
+                        localValue = localValue.replace(";", "");
+                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
+                        node = node.replace(localParam.get(i), localValue);
+                        cfgMap.put(node,statementType);
+                        listCfgNode.get(j).setContent(node);
+                    } else if (cfgMap.get(node) == RETURN){
+                        String returnValue = node.split(" ")[1];
+                        node = node.replace(returnValue, localValue);
+                        cfgMap.put(node,statementType);
+                        listCfgNode.get(j).setContent(node);
+                    }
+                }
+            }
         }
     }
 
@@ -364,7 +488,6 @@ public class SummaryGeneration {
             _preCond = _preCond + ")";
             preCond.add(_preCond);
             preCond.add(postCond);
-            System.out.println("post cond " + postCond);
         }
         return preCond;
     }

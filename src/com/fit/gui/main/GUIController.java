@@ -29,6 +29,7 @@ public class GUIController {
 	private GUIView view;
 	public static String projectPath = Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH;
 	public static String functionName = "";
+	public static String projectName = "";
 
 	public GUIController(GUIView view) {
 		this.view = view;
@@ -44,6 +45,7 @@ public class GUIController {
 			int countOfProjectDisplay = 0;
 			for (String loadedProject : ISettingv2.RECENT_PROJECTS) {
 				String nameProject = new File(loadedProject).getName();
+				projectName = nameProject;
 				radioButtoMenuItem = new JRadioButtonMenuItem(nameProject);
 				radioButtoMenuItem.setIcon(new ImageIcon(GUIView.class.getResource("/image/node/FolderNode.png")));
 

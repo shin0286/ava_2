@@ -233,7 +233,9 @@ public class CallGraphGeneration implements ICallGraphGeneration {
         ((LinkedList<ICallGraphNode>) nodeQueue).add(functionCallGraph);
         while (!nodeQueue.isEmpty()){
             ICallGraphNode firstNode = nodeQueue.remove();
-            if (firstNode.getName().equals(functionName)) {
+            String firstNodeName = firstNode.getName();
+            firstNodeName = firstNodeName.replace(", ", ",");
+            if (firstNodeName.equals(functionName)) {
                 functionNode = firstNode;
                 break;
             } else {

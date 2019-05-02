@@ -408,6 +408,7 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 				fnNormalizer.addNormalizer(new MacroNormalizer2());
 			}
 
+
             fnNormalizer.addNormalizer(new FunctionCallNormalizer());
 			fnNormalizer.addNormalizer(new FunctionNameNormalizer());
 			fnNormalizer.addNormalizer(new ArgumentTypeNormalizer());
@@ -416,6 +417,8 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 			fnNormalizer.addNormalizer(new ThrowNormalizer());
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());
 			fnNormalizer.normalize();
+//			IntegrationNormalizer in = new IntegrationNormalizer();
+//			fnNormalizer.setNormalizedSourcecode(in.getNormalizeFunction());
 			fnNormalizeFunctionToExecute = fnNormalizer;
 		}
 		return fnNormalizeFunctionToExecute;
@@ -446,6 +449,8 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 			fnNormalizer.addNormalizer(new ThrowNormalizer());
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());
 			fnNormalizer.addNormalizer(new EndStringNormalizer());
+//            IntegrationNormalizer in = new IntegrationNormalizer();
+//            fnNormalizer.setNormalizedSourcecode(in.getNormalizeFunction());
 			// fnNormalizer.addNormalizer(new ConstantNormalizer());
 
 			fnNormalizer.normalize();
@@ -465,6 +470,8 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 			fnNormalizer.addNormalizer(new ConditionCovertNormalizer());
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());
 			fnNormalizer.normalize();
+//            IntegrationNormalizer in = new IntegrationNormalizer();
+//            fnNormalizer.setNormalizedSourcecode(in.getNormalizeFunction());
 			fnNormalizeFunctionToDisplayCFG = fnNormalizer;
 		}
 		return fnNormalizeFunctionToDisplayCFG;
@@ -489,6 +496,8 @@ public abstract class AbstractFunctionNode extends CustomASTNode<IASTFunctionDef
 			fnNormalizer.addNormalizer(new SwitchCaseNormalizer());
 			
 			fnNormalizer.normalize();
+//            IntegrationNormalizer in = new IntegrationNormalizer();
+//            fnNormalizer.setNormalizedSourcecode(in.getNormalizeFunction());
 			fnNormalizedASTtoInstrument = fnNormalizer;
 			return fnNormalizedASTtoInstrument;
 
