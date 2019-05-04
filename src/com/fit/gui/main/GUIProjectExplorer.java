@@ -47,6 +47,7 @@ public class GUIProjectExplorer extends ProjectExplorer {
 	private GUIView view;
 	private Controller controller;
 	private GUIController guiController;
+	public static boolean isGenerated = false;
 
 	private static final long serialVersionUID = 1L;
 
@@ -82,6 +83,7 @@ public class GUIProjectExplorer extends ProjectExplorer {
 
 				if (item instanceof FunctionNode) {
 					FunctionNode fn = (FunctionNode) item;
+					guiController.generateSummary((FunctionNode)fn, Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH);
 					guiController.openSource(fn);
 
 					File f = new File(Utils.getFileNode(item).getAbsolutePath());
@@ -403,7 +405,6 @@ public class GUIProjectExplorer extends ProjectExplorer {
 						if (isSupportProject(Paths.CURRENT_PROJECT.CLONE_PROJECT_PATH) && checkZ3() && checkMcpp())
 							GUIProjectExplorer.this.retainSelect(FunctionNode.class).forEach(n -> {
 								guiController.openStructureCFGatLevel((FunctionNode) n, 1);
-
 								/*
 								 * Add function to the list of the tested functions
 								 */

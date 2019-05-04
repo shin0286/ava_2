@@ -79,12 +79,12 @@ public class SummaryGeneration {
 
     private HashMap<String,Integer> cfgMap = new HashMap<>();
 
-    public String projectPath = GUIController.projectPath;
+//    public String projectPath = GUIController.projectPath;
 
     //    public String externalParameterFile = GUIController.projectPath + "_exeternVar.xml";
-    public String externalParameterFile =  GUIController.projectPath + GUIController.projectName + "_exeternVar.xml";
+    public String externalParameterFile =  "F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\" + "Sample_for_R1_2_exeternVar.xml";
 
-//    public String summaryFile = GUIController.projectPath + "_summary.xml";
+//    public String summaryFile = summary.xml";
 
     ICallGraphNode functionCallNode = new CallGraphNode();
 
@@ -183,6 +183,7 @@ public class SummaryGeneration {
 
     public void summaryGenerationForFunctionInGraph(String projectPath, String summaryFile) {
         try {
+            functionInTest = functionInTest.replace(", ", ",");
             LinkedList<ICallGraphNode> noSummaryFunction = getNoSummaryFunction(functionInTest, summaryFile, projectPath);
             while (!noSummaryFunction.isEmpty()) {
                 ICallGraphNode inSummaryGeneration = noSummaryFunction.removeLast();

@@ -9,14 +9,8 @@ int mmin(int x, int y){
 }
 
 int mmin3(int x, int y, int z){
-//    int p;
-//    int q;
-//    q = x;
-//    x = q + y;
-    int r = mmin(x,y);
-//    if (x < r) {
-//        return 0;
-//    }
+	int r = mmin(x,y);
+
 	if (r < z)
 		return r;
 	else if (r == z)
@@ -24,6 +18,18 @@ int mmin3(int x, int y, int z){
 	else
 		return z;
 }
+
+//int mmin3(int x, int y, int z){
+//	int r = !(x<y)?y:x;
+//
+//	if (r < z)
+//		return r;
+//	else if (r == z)
+//	    return 1;
+//	else
+//		return z;
+//}
+
 
 int test0(int x, int y){
     int r = (x+y > 0)?(x+y):(x+y < 0)?(x-y):1;

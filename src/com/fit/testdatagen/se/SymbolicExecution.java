@@ -172,35 +172,6 @@ public class SymbolicExecution implements ISymbolicExecution {
 		}
 	}
 
-//	public void replaceUsedParameter(){
-//		String localValue = "";
-//	    for (int i=0; i<localParam.size(); i++){
-//	        for (int j=0; j<listCfgNode.size(); j++){
-//				ICfgNode cfgNode = listCfgNode.get(j);
-//	            String node = cfgNode.getContent();
-//	            if (node.contains(localParam.get(i))){
-//	                int statementType = cfgMap.get(node);
-//	                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(localParam.get(i)) < node.indexOf('=')){
-//	                    localValue = (node.split("="))[1];
-//	                    localValue = localValue.replace(" ", "");
-//                    } else if (cfgMap.get(node) == CONDITION){
-//	                	node = node.replace(localParam.get(i), localValue);
-////	                	ICfgNode newNode = new CfgNode(node);
-//                        cfgMap.put(node,statementType);
-//	                	listCfgNode.get(j).setContent(node);
-//					} else if (cfgMap.get(node) == RETURN){
-//	                	String returnValue = node.split(" ")[1];
-////	                	if (localParam.contains(returnValue) == true) {
-//							node = node.replace(returnValue, localValue);
-////						}
-//                        cfgMap.put(node,statementType);
-//                        listCfgNode.get(j).setContent(node);
-//					}
-//                }
-//            }
-//        }
-//    }
-
 	public SymbolicExecution(ITestpath testpath) throws Exception {
 		if (testpath != null) {
 			this.testpath = testpath;
@@ -236,9 +207,9 @@ public class SymbolicExecution implements ISymbolicExecution {
 		tpGen.generateTestpaths();
 		logger.debug("num tp = " + tpGen.getPossibleTestpaths().size());
 		FullTestpaths testpath = tpGen.getPossibleTestpaths();
-//        IFullTestpath randomTestpath = tpGen.getPossibleTestpaths().get(0);
+        IFullTestpath randomTestpath = tpGen.getPossibleTestpaths().get(0);
 
-//		logger.debug(randomTestpath);
+		logger.debug(randomTestpath);
 
 		// Get the passing variables of the given function
 		Parameter paramaters = new Parameter();
@@ -246,29 +217,11 @@ public class SymbolicExecution implements ISymbolicExecution {
 			paramaters.add(n);
 		for (INode n : ((FunctionNode) function).getReducedExternalVariables())
 			paramaters.add(n);
-		String summary = "";
-//        for (int i=0; i<testpath.size(); i++){
-//            IFullTestpath randomTestpath = testpath.get(i);
-//            ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
-////            System.out.println("constraints=\n" + se.getConstraints());
-//            System.out.println(((SymbolicExecution) se).listCfgNode);
-//            if (i<testpath.size()-1 && ((SymbolicExecution) se).postCond.size() != 0) {
-//				String pathSum = ((SymbolicExecution) se).preCond.get(((SymbolicExecution) se).preCond.size()-1) + "?" + ((SymbolicExecution) se).postCond.get(0) + ":";
-//				summary += pathSum;
-//			}
-//			System.out.println(se.getTableMapping().getVariables().get(0).getName());
-//        }
-//		int numOfPath = testpath.size();
-//        System.out.println(testpath.get(numOfPath-1));
-//		ISymbolicExecution se = new SymbolicExecution(testpath.get(numOfPath-1), paramaters, function);
-////		summary = summary + ((SymbolicExecution) se).postCond.get(0);
-//
-//		System.out.println(summary);
-		// Get the corresponding path constraints of the test path
-//		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
-//		System.out.println("constraints=\n" + se.getConstraints());
-//		System.out.println(se.getTableMapping().getVariables().get(1).getAllPhysicalCells());
-//		 System.out.println("table var=\n" + se.getTableMapping());
+
+		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
+		System.out.println("constraints=\n" + se.getConstraints());
+		System.out.println(se.getTableMapping().getVariables().get(1).getAllPhysicalCells());
+		 System.out.println("table var=\n" + se.getTableMapping());
 	}
 
 	public int getStatementType(IASTNode astNode){

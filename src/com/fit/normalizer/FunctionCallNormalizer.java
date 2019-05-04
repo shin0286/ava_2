@@ -177,9 +177,15 @@ import java.util.List;
 
 public class FunctionCallNormalizer extends AbstractFunctionNormalizer implements IFunctionNormalizer{
     String filePath = "F:\\New folder\\Sample_for_R1_2.xml";
+    String functionInTest = "mmin3(int, int, int)";
+    String projectPath = "F:\\New folder\\ava\\data-test\\tsdv\\Sample_for_R1_2\\";
+    String functionInExecute = "";
 
-    public FunctionCallNormalizer (){
-
+    public FunctionCallNormalizer () throws Exception{
+//        functionInTest = functionInTest.replace(", ", ",");
+//        if (functionInExecute.equals(functionInTest)){
+//            SummaryGeneration summaryGeneration = new SummaryGeneration(filePath, projectPath, functionInTest);
+//        }
     }
 
     public FunctionCallNormalizer (IFunctionNode functionNode) throws Exception{
@@ -217,10 +223,12 @@ public class FunctionCallNormalizer extends AbstractFunctionNormalizer implement
         List<String> sumList = readSummaryFile(filePath);
         System.out.println(sumList);
         String summary="";
+        functionInTest = functionInTest.replace(", ", ",");
+        functionInExecute = functionNode.getName();
         for (String sum : sumList){
             if (sum.startsWith(functionName)){
                 String temp[] = sum.split("/");
-                if (!this.functionNode.getName().equals("main()")){
+                if (!this.functionNode.getName().equals(functionInTest)){
                     summary = temp[2];
                 } else {
                     summary = temp[1];
@@ -228,6 +236,8 @@ public class FunctionCallNormalizer extends AbstractFunctionNormalizer implement
                 normalizeSourcecode = normalizeSourcecode.replace(functionCall,summary);
             }
         }
+
+        System.out.println(normalizeSourcecode); // run agin please
         return normalizeSourcecode;
     }
 

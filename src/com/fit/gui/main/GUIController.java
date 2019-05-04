@@ -11,6 +11,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import com.fit.SummaryGeneration;
 import org.apache.log4j.Logger;
 
 import com.fit.config.AbstractSetting;
@@ -27,7 +28,7 @@ import com.fit.utils.Utils;
 public class GUIController {
 	final static Logger logger = Logger.getLogger(GUIController.class);
 	private GUIView view;
-	public static String projectPath = Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH;
+//	public static String projectPath = Paths.CURRENT_PROJECT.ORIGINAL_PROJECT_PATH;
 	public static String functionName = "";
 	public static String projectName = "";
 
@@ -159,6 +160,17 @@ public class GUIController {
 					fn, view.cfgNodeClick, CFGVisualizer.OVERVIEW_CFG, levelCFG);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(view, "Catch an error when generate CFG!", "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	public void generateSummary(IFunctionNode fn, String projectPath){
+		try {
+			String summaryFile = "F:\\New folder\\Sample_for_R1_2.xml";
+			String functionName = fn.getName().replace(", ", ",");
+			SummaryGeneration summaryGeneration = new SummaryGeneration(summaryFile, projectPath, functionName);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(view, "Catch an error when generate summary!", "Error",
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}
