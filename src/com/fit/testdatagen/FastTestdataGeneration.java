@@ -155,7 +155,6 @@ public class FastTestdataGeneration extends MarsTestdataGeneration2 {
 				logger.debug("---------------------ITERATION-------------------------");
 				ITestdataExecution testdataExecution = executeFunction(testdata, changedTokens, fnReport, normalizedCfg,
 						originalFunction);
-
 				// If the current test data does not cause any errors
 				if (testdataExecution != null) {
 					// Find the path constraints of the given test data

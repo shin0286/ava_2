@@ -3,6 +3,7 @@ package com.fit.parser.projectparser;
 import java.io.File;
 import java.util.List;
 
+import com.fit.SummaryGeneration;
 import org.apache.log4j.Logger;
 
 import com.fit.config.ISettingv2;
@@ -29,6 +30,7 @@ import com.fit.utils.tostring.DependencyTreeDisplayer;
 public class ProjectParser extends AbstractProjectParser implements
 		IProjectParser {
 	final static Logger logger = Logger.getLogger(ProjectParser.class);
+	public boolean isMakeFileCreated = false;
 
 	public static void main(String[] args) throws Exception {
 		ProjectParser projectParser = new ProjectParser(new File(
@@ -89,7 +91,7 @@ public class ProjectParser extends AbstractProjectParser implements
 						new UnknownFileNodeCondition(), File.separator
 								+ IProjectLoader.MAKEFILE_IN_DEVCPP_SYMBOL);
 
-				if (makefileNodes != null && makefileNodes.size() == 1) {
+				if (makefileNodes != null && makefileNodes.size() == 1 && isMakeFileCreated == false) {
 					Paths.CURRENT_PROJECT.MAKEFILE_PATH = makefileNodes.get(0)
 							.getAbsolutePath();
 

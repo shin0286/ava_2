@@ -90,14 +90,18 @@ public class SummaryGeneration {
 
     public String functionInTest = "";
 
+    public static boolean inSummaryGenProcess = true;
+
     public SummaryGeneration (String summaryFile, String projectPath, String functionInTest) throws Exception{
         this.functionInTest = functionInTest;
         summaryGenerationForFunctionInGraph(projectPath, summaryFile);
+        inSummaryGenProcess = false;
 
     }
 
     public IFunctionNode getFunctionNode(String projectPath, String functionName) throws Exception {
         ProjectParser parser = new ProjectParser(new File(projectPath));
+        parser.isMakeFileCreated = true;
         IFunctionNode function = (IFunctionNode) Search
                 .searchNodes(parser.getRootTree(), new FunctionNodeCondition(), functionName).get(0);
 //        System.out.println(function.getAST().getRawSignature());

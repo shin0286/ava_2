@@ -127,13 +127,13 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 
 		FullTestpaths mayHaveSolutionTestpaths = findMayHaveTestpaths(possibleTestpaths, kCut / 2);
 		logger.debug("May-have solution test paths size = " + mayHaveSolutionTestpaths.size());
-
+		System.out.println("May-have " + mayHaveSolutionTestpaths);
 		FullTestpaths prioritizedTestpaths = priorityTestpaths(functionConfig, normalizedCfg, mayHaveSolutionTestpaths);
 		logger.debug("Prioritized test paths size = " + prioritizedTestpaths.size());
 
 		FullTestpaths uncoveredTestpaths = getUncoveredTestpaths(prioritizedTestpaths, functionConfig, normalizedCfg);
 		logger.debug("Uncovered testpaths size = " + uncoveredTestpaths.size());
-
+		System.out.println("Uncover " + uncoveredTestpaths);
 		generateTestdata(functionConfig, uncoveredTestpaths, normalizedCfg, changedTokens, 0, originalFunction);
 	}
 
@@ -177,6 +177,7 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 
 				generateTestdata(functionConfig, uncoveredTestpaths, normalizedCfg, changedTokens, numExecution,
 						originalFunction);
+				System.out.println("bbbbbbbb");
 			}
 	}
 
@@ -230,7 +231,6 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 	synchronized void generateTestdata(IFunctionConfig functionConfig, FullTestpaths testpaths, ICFG normalizedCfg,
 			ChangedTokens changedTokens, int numExecution, IFunctionNode originalFunction) throws Exception {
 		FullTestpaths visitedTestpaths = new FullTestpaths();
-
 		while (testpaths.size() > 0 && fnReport.computeCoverage() < 100) {
 			/*
 			 * Get the highest priority test path
@@ -238,11 +238,11 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 			IFullTestpath bestTestpath = null;
 			do {
 				bestTestpath = testpaths.get(0);
+                System.out.println("bbbbbbbb" + bestTestpath);
 				testpaths.remove(0);
 			} while (visitedTestpaths.contains(bestTestpath));
 
 			if (bestTestpath != null) {
-				visitedTestpaths.add(bestTestpath);
 				logger.debug("Test path = " + bestTestpath.toString());
 				IStaticSolutionGeneration staticSolutionGen = bestTestpath.generateTestdata();
 				String staticSolution = staticSolutionGen.getStaticSolution();
@@ -254,7 +254,6 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 					logger.debug("|=| Run under a random inputs...");
 					executeFunction(IStaticSolutionGeneration.NO_SOLUTION, changedTokens, fnReport, normalizedCfg,
 							originalFunction);
-
 				} else {
 					logger.debug("|=| Found a solution...");
 					logger.debug("iteration at " + numExecution++);

@@ -73,6 +73,7 @@ public class FunctionExecution implements ITestdataExecution {
 				case ISettingv2.PROJECT_ECLIPSE: {
 					executionFilePath = new File(Utils.getSourcecodeFile(fn).getAbsolutePath()).getParent()
 							+ File.separator + Paths.CURRENT_PROJECT.CURRENT_TESTDRIVER_EXECUTION_NAME;
+					System.out.println("execution file path " + executionFilePath);
 					break;
 				}
 				case ISettingv2.PROJECT_DEV_CPP:
@@ -275,6 +276,7 @@ public class FunctionExecution implements ITestdataExecution {
 
 		} else {
 			logger.debug("Start executing function");
+			System.out.println(Paths.CURRENT_PROJECT.EXE_PATH + "aaaaaaaaaaaaaaa");
 			boolean isTerminated = ConsoleExecution.executeExe(new File(Paths.CURRENT_PROJECT.EXE_PATH));
 			logger.debug("Start executing function...done");
 			AbstractTestdataGeneration.numOfExecutions++;
@@ -289,6 +291,7 @@ public class FunctionExecution implements ITestdataExecution {
 				do {
 					logger.debug("Reading execution path from hard disk");
 					testpath = Utils.readFileContent(executionFilePath);
+
 					testpath = normalizeTestpathFromFile(testpath);
 
 					if (testpath.length() == 0) {
