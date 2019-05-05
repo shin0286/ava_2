@@ -219,6 +219,7 @@ public class SymbolicExecution implements ISymbolicExecution {
 			paramaters.add(n);
 
 		ISymbolicExecution se = new SymbolicExecution(randomTestpath, paramaters, function);
+		System.out.println(paramaters);
 		System.out.println("constraints=\n" + se.getConstraints());
 		System.out.println(se.getTableMapping().getVariables().get(1).getAllPhysicalCells());
 		 System.out.println("table var=\n" + se.getTableMapping());

@@ -129,7 +129,8 @@ public class SummaryGeneration {
     }
 
     public static void main(String[] args) throws Exception {
-        SummaryGeneration sg = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\", "main()");
+//        SummaryGeneration sg = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\", "main()");
+        SummaryGeneration sg = new SummaryGeneration("F:\\New folder\\Sample_for_R1_2.xml","F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\", "mmin3(int,int,int)");
     }
 
     public ArrayList<String> getListFunctionWithSummary(String summaryFile) throws Exception{
@@ -203,16 +204,22 @@ public class SummaryGeneration {
 
     public void writeSummaryToFile(String sumFilepath, IFunctionNode function) throws Exception{
         ArrayList<String> summary = new ArrayList<>();
-        if (Utils.containsLoopBlock(function) == true)
-            summary = generateSummaryForLoop(function);
-        else
+        String returnType = function.getAST().getChildren()[0].getRawSignature();
+        if (returnType.equals("void")) {
+            String instanceParameter = "";
+            for (INode n : ((FunctionNode) function).getReducedExternalVariables())
+                instanceParameter = instanceParameter + n.getName() + ",";
+            writeToXml(sumFilepath, function.getName(), instanceParameter, function.getAST().getChildren()[0].getRawSignature(), "no");
+        }
+        else {
             summary = generateSummaryOfAllSimpleTestpath(function);
-        writeToXml(sumFilepath, function.getName(), summary.get(0), summary.get(1));
-        System.out.println(function.getName() + "\tfull sum " + summary.get(0));
+            writeToXml(sumFilepath, function.getName(), summary.get(0), summary.get(1), summary.get(2));
+            System.out.println(function.getName() + "\tfull sum " + summary.get(0));
+        }
     }
 
 
-    public void writeToXml(String summaryFile, String functionName, String fullSummary, String shortSummary) throws Exception{
+    public void writeToXml(String summaryFile, String functionName, String parameter, String fullSummary, String shortSummary) throws Exception{
         File file = new File(summaryFile);
         Document doc = null;
         Element root = null;
@@ -233,6 +240,10 @@ public class SummaryGeneration {
         name.appendChild(doc.createTextNode(functionName));
         function.appendChild(name);
 
+        Element param = doc.createElement("parameter");
+        param.appendChild(doc.createTextNode(parameter));
+        function.appendChild(param);
+
         Element fullsum = doc.createElement("full-summary");
         fullsum.appendChild(doc.createTextNode(fullSummary));
         function.appendChild(fullsum);
@@ -251,49 +262,53 @@ public class SummaryGeneration {
 
     ArrayList<String> generateSummaryOfAllSimpleTestpath (IFunctionNode function) throws Exception{
         ArrayList<String> summary = new ArrayList<>();
-        String returnType = function.getAST().getChildren()[0].getRawSignature();
         String fullSum = "";
         String shortSum = "";
-        if (returnType.equals("void")){
-            fullSum = function.getAST().getChildren()[2].getRawSignature();
-        } else {
-            PossibleTestpathGeneration tpGen = new PossibleTestpathGeneration(
-                    new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES)
-                            .generateCFG(),
-                    function.getFunctionConfig().getMaximumInterationsForEachLoop());
-            tpGen.generateTestpaths();
-            FullTestpaths testpath = tpGen.getPossibleTestpaths();
+        String instanceParameter = "";
 
-            Parameter paramaters = new Parameter();
-            for (INode n : ((FunctionNode) function).getArguments())
-                paramaters.add(n);
-            for (INode n : ((FunctionNode) function).getReducedExternalVariables())
-                paramaters.add(n);
+        PossibleTestpathGeneration tpGen = new PossibleTestpathGeneration(
+                new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES)
+                        .generateCFG(),
+                function.getFunctionConfig().getMaximumInterationsForEachLoop());
+        tpGen.generateTestpaths();
+        FullTestpaths testpath = tpGen.getPossibleTestpaths();
 
-            int numOfPath = testpath.size();
-            for (int i=0; i<numOfPath; i++) {
-                IFullTestpath randomTestpath = testpath.get(i);
-                ArrayList<String> constraintList = generateSummaryOfATestpath(randomTestpath, paramaters, function);
-                int numOfConstraint = constraintList.size();
-                if (i < numOfPath-1 && constraintList.get(numOfConstraint-1).contains("return")) {
-                    String postCond = constraintList.get(numOfConstraint-1);
-                    postCond = postCond.replace("return", "");
-                    postCond = postCond.replace(";", "");
-                    if (i == 0){
-                        shortSum = postCond;
-                    }
-                    String pathSum = constraintList.get(numOfConstraint-2) + "?" + postCond + ":";
-                    fullSum += pathSum;
-                }
-            }
-            ArrayList<String> constraintList = generateSummaryOfATestpath(testpath.get(numOfPath-1), paramaters, function);
-            String postCond = constraintList.get(constraintList.size()-1);
-            postCond = postCond.replace("return", "");
-            postCond = postCond.replace(";", "");
-            fullSum = fullSum + postCond;
-            summary.add(fullSum);
-            summary.add(shortSum);
+        Parameter paramaters = new Parameter();
+        for (INode n : ((FunctionNode) function).getArguments()) {
+            instanceParameter = instanceParameter + n.getName() + ",";
+            paramaters.add(n);
         }
+        for (INode n : ((FunctionNode) function).getReducedExternalVariables())
+            paramaters.add(n);
+
+        List<IVariableNode> externalVariables = function.getReducedExternalVariables();
+
+        ArrayList<String> externParam = new ArrayList<>();
+
+        int numOfPath = testpath.size();
+        for (int i=0; i<numOfPath; i++) {
+            IFullTestpath randomTestpath = testpath.get(i);
+            ArrayList<String> constraintList = generateSummaryOfATestpath(randomTestpath, paramaters, function);
+            int numOfConstraint = constraintList.size();
+            if (i < numOfPath-1 && constraintList.get(numOfConstraint-1).contains("return")) {
+                String postCond = constraintList.get(numOfConstraint-1);
+                postCond = postCond.replace("return", "");
+                postCond = postCond.replace(";", "");
+                if (i == 0){
+                    shortSum = postCond;
+                }
+                String pathSum = constraintList.get(numOfConstraint-2) + "?" + postCond + ":";
+                fullSum += pathSum;
+            }
+        }
+        ArrayList<String> constraintList = generateSummaryOfATestpath(testpath.get(numOfPath-1), paramaters, function);
+        String postCond = constraintList.get(constraintList.size()-1);
+        postCond = postCond.replace("return", "");
+        postCond = postCond.replace(";", "");
+        fullSum = fullSum + postCond;
+        summary.add(instanceParameter);
+        summary.add(fullSum);
+        summary.add(shortSum);
         return summary;
     }
 
@@ -304,7 +319,8 @@ public class SummaryGeneration {
             String node = cfgNode.getContent();
             if (node.contains(parameter + " ")){
                 int statementType = cfgMap.get(node);
-                if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(parameter) < node.indexOf('=')){
+                if ((cfgMap.get(node) == BINARY_ASSIGNMENT || cfgMap.get(node) == DECLARATION)
+                        && node.indexOf(parameter) < node.indexOf('=')){
                     isDef = true;
                     localValue = (node.split("="))[1];
                     localValue = localValue.replace(" ", "");
@@ -324,66 +340,19 @@ public class SummaryGeneration {
 
     public void replaceUsedParameter(ArrayList<String> localParam, ArrayList<String> instanceParam) {
         String localValue = "";
-        for (int i=0; i<instanceParam.size(); i++){
-            boolean isDef = false;
-            for (int j=0; j<listCfgNode.size(); j++){
-                ICfgNode cfgNode = listCfgNode.get(j);
-                String node = cfgNode.getContent();
-                if (node.contains(instanceParam.get(i) + " ")){
-                    int statementType = cfgMap.get(node);
-                    if (cfgMap.get(node) == BINARY_ASSIGNMENT && node.indexOf(instanceParam.get(i)) < node.indexOf('=')){
-                        isDef = true;
-                        localValue = (node.split("="))[1];
-                        localValue = localValue.replace(" ", "");
-                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
-                        node = node.replace(instanceParam.get(i), localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    } else if (cfgMap.get(node) == RETURN){
-                        String returnValue = node.split(" ")[1];
-                        node = node.replace(returnValue, localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    }
-                }
-            }
+        for (String instance : instanceParam){
+            replaceParameter(instance, localValue);
         }
 
-        for (int i=0; i<localParam.size(); i++){
-            boolean isDef = false;
-            for (int j=0; j<listCfgNode.size(); j++){
-                String node = listCfgNode.get(j).getContent();
-                if (node.contains(" " + localParam.get(i)) || node.contains(localParam.get(i) + " ")){
-                    int statementType = cfgMap.get(node);
-                    if ((cfgMap.get(node) == BINARY_ASSIGNMENT || cfgMap.get(node) == DECLARATION)
-                            && node.indexOf(localParam.get(i)) < node.indexOf('=')){
-                        isDef = true;
-                        localValue = (node.split("="))[1];
-                        localValue = localValue.replace(" ", "");
-                        localValue = localValue.replace(";", "");
-                    } else if (cfgMap.get(node) == CONDITION && isDef == true){
-                        node = node.replace(localParam.get(i), localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    } else if (cfgMap.get(node) == RETURN){
-                        String returnValue = node.split(" ")[1];
-                        node = node.replace(returnValue, localValue);
-                        cfgMap.put(node,statementType);
-                        listCfgNode.get(j).setContent(node);
-                    }
-                }
-            }
+        for (String local : localParam){
+            replaceParameter(local, localValue);
         }
     }
 
-    void replaceExternalVariable(IFunctionNode function) throws Exception{
-        ReducedExternalVariableDetecter externalVariable = new ReducedExternalVariableDetecter(function);
-        List<IVariableNode> externalVariables = function.getReducedExternalVariables();
+    void replaceExternalVariable(IFunctionNode function, List<IVariableNode> externalVariables) throws Exception{
         HashMap<String, String> externalVarMap = new HashMap<>();
-        ArrayList<String> externalVarList = new ArrayList<>();
         for (INode node : externalVariables){
             externalVarMap.put(node.getName(), node.getAbsolutePath());
-            externalVarList.add(node.getName());
         }
         File xmlFile = new File(externalParameterFile);
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -408,13 +377,19 @@ public class SummaryGeneration {
 
     public ArrayList<String> generateSummaryOfATestpath (IFullTestpath testpath, Parameter paramaters, IFunctionNode function) throws Exception {
 
-        ArrayList<String> preCond = new ArrayList<>();
+        ArrayList<String> preCondition = new ArrayList<>();
 
         ArrayList<String> localParam = new ArrayList<>();
 
         ArrayList<String> instanceParam = new ArrayList<>();
 
+        List<IVariableNode> externalVariables = function.getReducedExternalVariables();
+
         ArrayList<String> externParam = new ArrayList<>();
+
+        for (IVariableNode extern : externalVariables) {
+            externParam.add(extern.getName());
+        }
 
         INormalizedTestpath normalizedTestpath = null;
         if (testpath instanceof INormalizedTestpath)
@@ -430,7 +405,7 @@ public class SummaryGeneration {
 
         SymbolicExecution se = new SymbolicExecution(testpath, paramaters, function);
 
-        String postCond = "";
+        String postCondition = "";
 
         for (ICfgNode cfgNode : listCfgNode) {
             if (!se.isAlwaysFalse())
@@ -458,11 +433,10 @@ public class SummaryGeneration {
             }
 
         }
-
         if (!se.isAlwaysFalse()) {
             replaceUsedParameter(localParam, instanceParam);
             if (externParam.size() != 0) {
-                replaceExternalVariable(function);
+                replaceExternalVariable(function, externalVariables);
             }
             for (ICfgNode cfgNode : listCfgNode) {
                 if (cfgNode instanceof BeginFlagCfgNode || cfgNode instanceof EndFlagCfgNode) {
@@ -473,11 +447,11 @@ public class SummaryGeneration {
                             String node = cfgNode.getContent();
                             if (cfgMap.get(node) != CONDITION) {
                                 if (cfgMap.get(node) == RETURN) {
-                                    postCond = node;
+                                    postCondition = node;
                                 }
                             } else {
                                 if (cfgMap.get(node) == CONDITION)
-                                    preCond.add(node);
+                                    preCondition.add(node);
                             }
                         }
                     } catch (Exception e) {
@@ -485,31 +459,16 @@ public class SummaryGeneration {
                         break;
                     }
             }
-//            System.out.println(listCfgNode);
-            String _preCond = "(" + preCond.get(0);
-            for (int i = 1; i < preCond.size(); i++) {
-                _preCond = _preCond + " && " + preCond.get(i);
+
+            String _preCond = "(" + preCondition.get(0);
+            for (int i = 1; i < preCondition.size(); i++) {
+                _preCond = _preCond + " && " + preCondition.get(i);
             }
             _preCond = _preCond + ")";
-            preCond.add(_preCond);
-            preCond.add(postCond);
+            preCondition.add(_preCond);
+            preCondition.add(postCondition);
         }
-        return preCond;
-    }
-    public ArrayList<String> generateSummaryForLoop (IFunctionNode function) throws Exception{
-        CFGGenerationforBranchvsStatementCoverage cfgGen = new CFGGenerationforBranchvsStatementCoverage(function, ICFGGeneration.SEPARATE_FOR_INTO_SEVERAL_NODES);
-        ICFG cfg = cfgGen.generateCFG();
-        cfg.setFunctionNode(function);
-        cfg.setIdforAllNodes();
-        cfg.resetVisitedState();
-        AbstractConditionLoopCfgNode loopCondition = (AbstractConditionLoopCfgNode) cfg
-                .findFirstCfgNodeByContent("a<5");
-        PossibleTestpathGenerationForLoop tpGen = new PossibleTestpathGenerationForLoop(cfg, loopCondition);
-        tpGen.setIterationForUnboundedTestingLoop(3);
-        tpGen.setMaximumIterationsForOtherLoops(0);
-        tpGen.generateTestpaths();
-
-        return null;
+        return preCondition;
     }
 }
 

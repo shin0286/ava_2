@@ -95,7 +95,7 @@ public class PossibleTestpathGenerationForLoop extends AbstractPossibleTestpathG
         AbstractConditionLoopCfgNode loopCondition = (AbstractConditionLoopCfgNode) cfg
                 .findFirstCfgNodeByContent("a<5");
         PossibleTestpathGenerationForLoop tpGen = new PossibleTestpathGenerationForLoop(cfg, loopCondition);
-        tpGen.setIterationForUnboundedTestingLoop(5);
+        tpGen.setIterationForUnboundedTestingLoop(3);
         tpGen.setMaximumIterationsForOtherLoops(0);
         tpGen.generateTestpaths();
         System.out.println("Possible testpath: " + tpGen.getPossibleTestpaths());

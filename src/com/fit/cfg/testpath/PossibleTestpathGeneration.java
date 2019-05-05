@@ -3,6 +3,7 @@ package com.fit.cfg.testpath;
 import java.io.File;
 import java.util.Date;
 
+import com.fit.normalizer.UnaryNormalizer;
 import org.apache.log4j.Logger;
 
 import com.fit.cfg.CFGGenerationSubCondition;
@@ -82,10 +83,10 @@ public class PossibleTestpathGeneration implements ITestpathGeneration {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\tsdv\\Sample_for_R1_2\\"));
+		ProjectParser parser = new ProjectParser(new File("F:\\New folder\\ava_ver2\\data-test\\ducanh\\SymbolicExecutionTest\\"));
 
 		IFunctionNode function = (IFunctionNode) Search
-				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "mmin3(int,int,int)").get(0);
+				.searchNodes(parser.getRootTree(), new FunctionNodeCondition(), "loop2(int)").get(0);
 
 		FunctionNormalizer fnNormalizer = function.normalizeFunctionToFindStaticTestcase();
 		function.setAST(fnNormalizer.getNormalizedAST());
@@ -99,10 +100,21 @@ public class PossibleTestpathGeneration implements ITestpathGeneration {
 		int maxIterations = 4;
 		PossibleTestpathGeneration tpGen = new PossibleTestpathGeneration(cfg, maxIterations);
 		tpGen.generateTestpaths();
+		IFullTestpath testpath = tpGen.getPossibleTestpaths().get(1);
+		INormalizedTestpath normalizedTestpath = null;
+		if (testpath instanceof INormalizedTestpath)
+			normalizedTestpath = (INormalizedTestpath) testpath;
+		else {
+			UnaryNormalizer tpNormalizer = new UnaryNormalizer();
+			tpNormalizer.setOriginalTestpath(testpath);
+			tpNormalizer.normalize();
+			normalizedTestpath = tpNormalizer.getNormalizedTestpath();
+		}
 
 //		System.out.println("Num of test paths: " + tpGen.getPossibleTestpaths().size());
-		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(0));
-		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(2));
+//		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(0));
+//		System.out.println(tpGen.getPossibleTestpaths().getTestpathAt(2));
+		System.out.println(normalizedTestpath);
 	}
 
 	@Override

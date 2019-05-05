@@ -238,7 +238,7 @@ public class MarsTestdataGeneration extends AbstractTestdataGeneration
 			IFullTestpath bestTestpath = null;
 			do {
 				bestTestpath = testpaths.get(0);
-                System.out.println("bbbbbbbb" + bestTestpath);
+//                System.out.println("bbbbbbbb" + bestTestpath);
 				testpaths.remove(0);
 			} while (visitedTestpaths.contains(bestTestpath));
 
